@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<form method="post" action="{% url 'add_item' %}">
+    {% csrf_token %}
+
+    <!-- Your Form Fields Go Here -->
+    <div class="form-group">
+        <label for="item_type">Item Type:</label>
+        <input type="text" name="item_type" class="form-control" required>
+    </div>
+
+    <!-- Add other fields based on the Items model -->
+
+    <!-- Save and Cancel Buttons -->
+    <div class="form-group">
+        <button type="submit" class="btn btn-success">Save</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+    </div>
+</form>
+{% endblock %}

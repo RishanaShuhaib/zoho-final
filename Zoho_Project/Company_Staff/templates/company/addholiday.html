@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+    integrity="sha256-H+K7U5CnXl1zQDycExUcchX2AeLgDuU66JECGMW2FXE=" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+Wy7BikI5XDN+tdHsEDFou1fuqtqpi7ci1N"
+    crossorigin="anonymous"></script>
+
+<style>
+    .btn-warning {
+        color: black;
+    }
+
+    .dropdown-heading {
+        font-weight: bold;
+        color: white;
+        margin-bottom: 5px;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        // Set today's date in the date field
+        var today = new Date().toISOString().split('T')[0];
+        $("#dateInput").val(today);
+    });
+</script>
+
+<div class="body-wrapper">
+    <div class="container-fluid">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}"
+                        class="text-warning-emphasis">Dashboard</a></li>
+                <li class="breadcrumb-item" aria-current="page">Add Holiday</li>
+            </ol>
+        </nav>
+
+        <div class="container mt-3" style="background-color: black;">
+            <h2 style="color: white;" class="text-center">Add Holiday</h2>
+            <form method="post" action="{% url 'add_holiday' %}">
+                {% csrf_token %}
+
+                <!-- Holiday Name -->
+                <div>
+                    <label for="holidayName">Holiday Name:</label>
+                    <input type="text" name="holidayName" required>
+                </div>
+
+                <!-- Start Date -->
+                <div>
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" name="startDate" required>
+                </div>
+
+                <!-- End Date -->
+                <div>
+                    <label for="endDate">End Date:</label>
+                    <input type="date" name="endDate" required>
+                </div>
+
+                <!-- Terms and Conditions Checkbox -->
+                <div class="checkbox-container">
+                    <input type="checkbox" name="termsAndConditions" required>
+                    I agree to the terms and conditions
+                </div>
+
+                <!-- Save and Cancel Buttons -->
+                <div>
+                    <button type="submit">Save</button>
+                    <a href="#">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

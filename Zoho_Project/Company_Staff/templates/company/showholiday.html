@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+  table tr td:hover {
+    cursor: pointer;
+  }
+</style>
+
+<body>
+  <div class="body-wrapper">
+    <div class="container-fluid">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+          <li class="breadcrumb-item" aria-current="page">Show Holiday Details</li>
+        </ol>
+      </nav>
+      <div style="overflow-x:auto;">
+        <div class="mb-3">
+          <a href="{% url 'add_holiday' %}" class="btn btn-primary">
+            New <i class="fas fa-plus"></i>
+          </a>
+        </div>
+        <div class="table-responsive">
+          <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0); color: white;">
+            <thead>
+              <tr class="border-bottom border-dark">
+                <th scope="col"><b>Sl. No</b></th>
+                <th scope="col"><b>Month</b></th>
+                <th scope="col"><b>Year</b></th>
+                <th scope="col"><b>Holidays</b></th>
+                <th scope="col"><b>Working Days</b></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if holidays %}
+  {% for holiday in holidays %}
+    <tr class="border-bottom border-dark">
+      <td>{{ forloop.counter }}</td>
+      <td>{{ holiday.start_month|date:"F" }}</td>
+      <td>{{ holiday.start_month|date:"Y" }}</td>
+      <td>{{ holiday.holidays }}</td>
+      <td>{{ holiday.working_days }}</td>
+    </tr>
+  {% endfor %}
+{% else %}
+  <tr class="border-bottom border-dark">
+    <td colspan="6">No holiday records available.</td>
+  </tr>
+{% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+{% endblock %}

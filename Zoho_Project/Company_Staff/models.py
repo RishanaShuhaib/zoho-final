@@ -25,7 +25,6 @@ class Items(models.Model):
     purchase_description=models.CharField(max_length=255)
    
     minimum_stock_to_maintain=models.IntegerField(blank=True,null=True)  
-    activation_tag=models.CharField(max_length=255,default='active')
     inventory_account=models.CharField(max_length=255,null=True)
 
     date=models.DateTimeField(auto_now_add=True)                                       
@@ -48,5 +47,9 @@ class Godown(models.Model):
     godown_address = models.CharField(max_length=255)
     stock_keeping = models.IntegerField()
     distance = models.IntegerField()
-    company = models.ForeignKey(CompanyDetails, on_delete=models.CASCADE)
     login_details = models.ForeignKey(LoginDetails, on_delete=models.CASCADE)
+class Holiday(models.Model):
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    holiday_name = models.CharField(max_length=255, null=True, blank=True)
+    user = models.ForeignKey(LoginDetails, on_delete=models.CASCADE, null=True, blank=True)

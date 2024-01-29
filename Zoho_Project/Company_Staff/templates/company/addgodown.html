@@ -3,99 +3,260 @@
 {% load static %}
 
 <style>
-  /* Add your custom styles here */
+  /* Dark theme styles */
+  body {
+    background-color: #121212; /* Dark background color */
+    color: #ffffff; /* Light text color */
+  }
+
+  .custom-container {
+    padding-top: 90px;
+  }
+
+  @media (max-width: 768px) {
+    .custom-container {
+      padding-top: 90px;
+    }
+  }
+
+  /* Add more styles as needed for specific elements */
+
+  /* Modal styles */
+  .modal-content {
+    background-color: #343a40; /* Dark modal background color */
+    color: #ffffff; /* Light text color */
+  }
+  .modal-title {
+    background-color: #343a40; /* Dark modal background color */
+    color: #ffffff; /* Light text color */
+  }
 </style>
 
-<body>
-  <div class="body-wrapper">
-    <div class="container-fluid">
-      <h2>Add Godown</h2>
-      <form method="post" action="#">
-        {% csrf_token %}
-        
-        <!-- Date -->
-        <div class="form-group">
-          <label for="date">Date:</label>
-          <input type="date" name="date" class="form-control" required>
-        </div>
+<div class="container custom-container">
+  <h2>Add Godown</h2>
+  <form method="post" action="{% url 'add_godown' %}">
+    {% csrf_token %}
 
-        <!-- Items Dropdown -->
-        <div class="form-group">
-          <label for="item">Item:</label>
-          <select name="item" class="form-control" required>
-            {% for item in items %}
-              <option value="{{ item.id }}">{{ item.item_name }}</option>
-            {% endfor %}
-          </select>
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addItemModal">Add Item</button>
-        </div>
-
-        <!-- Godown Name -->
-        <div class="form-group">
-          <label for="godownName">Godown Name:</label>
-          <input type="text" name="godownName" class="form-control" required>
-        </div>
-
-        <!-- Godown Address -->
-        <div class="form-group">
-          <label for="godownAddress">Godown Address:</label>
-          <textarea name="godownAddress" class="form-control" rows="3" required></textarea>
-        </div>
-
-        <!-- Stock Keeping -->
-        <div class="form-group">
-          <label for="stockKeeping">Stock Keeping:</label>
-          <input type="number" name="stockKeeping" class="form-control" required>
-        </div>
-
-        <!-- Kilometers -->
-        <div class="form-group">
-          <label for="kilometers">Kilometers:</label>
-          <input type="number" name="kilometers" class="form-control" required>
-        </div>
-
-        <!-- Save and Cancel Buttons -->
-        <div class="form-group">
-          <button type="submit" class="btn btn-success">Save</button>
-          <a href="#" class="btn btn-secondary">Cancel</a>
-        </div>
-      </form>
+    <!-- Date -->
+    {% now "Y-m-d" as current_date %}
+    <div class="form-group">
+      <label for="date">Date:</label>
+      <input type="date" name="date" class="form-control" value="{{ current_date }}" required>
     </div>
-  </div>
 
-  <!-- Add Item Modal -->
-  <div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addItemModalLabel">Add Item</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+    <!-- Add Item Button -->
+    <div class="form-group">
+      <label for="item">Items:</label>
+      <div class="input-group">
+        <select id="selectItems" name="item" class="form-control" required>
+          {% for item in items %}
+          <option value="{{ item.id }}">{{ item.item_name }}</option>
+          {% endfor %}
+        </select>
+        <div class="input-group-append">
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+            Add Item
           </button>
         </div>
-        <div class="modal-body">
-          <!-- Form to add item -->
-          <form method="post" action="#">
-            {% csrf_token %}
-            <!-- Include fields from your Item model here -->
-            <!-- Example: -->
-            <div class="form-group">
-              <label for="item_name">Item Name:</label>
-              <input type="text" name="item_name" class="form-control" required>
-            </div>
-            <div class="form-group">
-              <label for="item_type">Item Type:</label>
-              <input type="text" name="item_type" class="form-control" required>
-            </div>
-            <!-- Add other fields as needed -->
+      </div>
+    </div>
 
-            <button type="submit" class="btn btn-primary">Add Item</button>
-          </form>
+    <!-- The Modal -->
+    
+    <!-- Godown Name -->
+    <div class="form-group">
+      <label for="godownName">Godown Name:</label>
+      <input type="text" name="godownName" class="form-control" required>
+    </div>
+
+    <!-- Godown Address -->
+    <div class="form-group">
+      <label for="godownAddress">Godown Address:</label>
+      <textarea name="godownAddress" class="form-control" rows="3" required></textarea>
+    </div>
+    <div class="form-group">
+      <label for="HSN">HSN:</label>
+      <input type="text" name="HSN" class="form-control" required>
+  </div>
+  <div class="form-group">
+    <label for="stock_in_hand">Stock in Hand:</label>
+    <input type="number" name="stock_in_hand" class="form-control" required>
+  </div>
+    <!-- Stock Keeping -->
+    <div class="form-group">
+      <label for="stockKeeping">Stock Keeping:</label>
+      <input type="number" name="stockKeeping" class="form-control" required>
+    </div>
+
+    <!-- Kilometers -->
+    <div class="form-group">
+      <label for="kilometers">Kilometers:</label>
+      <input type="number" name="kilometers" class="form-control" required>
+    </div>
+
+    <!-- Save and Cancel Buttons -->
+    <div class="form-group">
+      <button type="submit" class="btn btn-success">Save</button>
+      <a href="#" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+  <div class="modal" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Add Item</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          <form id="addItemForm"action="{% url 'save_item' %}">
+              {% csrf_token %}
+      
+              <!-- Item Type -->
+              <div class="form-group">
+                  <label for="itemType">Item Type:</label>
+                  <input type="text" name="itemType" class="form-control" >
+              </div>
+      
+              <!-- Item Name -->
+              <div class="form-group">
+                  <label for="itemName">Item Name:</label>
+                  <input type="text" name="itemName" class="form-control" >
+              </div>
+      
+              <!-- Unit -->
+              <div class="form-group">
+                <label for="unit">Unit:</label>
+                <select name="unit" class="form-control">
+                    {% for unit in units %}
+                        <option value="{{ unit.id }}">{{ unit.unit_name }}</option>
+                    {% endfor %}
+                </select>
+                
+            </div>
+      
+              <!-- HSN Code -->
+              <div class="form-group">
+                  <label for="hsnCode">HSN Code:</label>
+                  <input type="number" name="hsnCode" class="form-control">
+              </div>
+      
+              <!-- Tax Reference -->
+              <div class="form-group">
+                  <label for="taxReference">Tax Reference:</label>
+                  <input type="text" name="taxReference" class="form-control">
+              </div>
+      
+              <!-- Intrastate Tax -->
+              <div class="form-group">
+                  <label for="intrastateTax">Intrastate Tax:</label>
+                  <input type="number" name="intrastateTax" class="form-control">
+              </div>
+      
+              <!-- Interstate Tax -->
+              <div class="form-group">
+                  <label for="interstateTax">Interstate Tax:</label>
+                  <input type="number" name="interstateTax" class="form-control">
+              </div>
+      
+              <!-- Selling Price -->
+              <div class="form-group">
+                  <label for="sellingPrice">Selling Price:</label>
+                  <input type="number" name="sellingPrice" class="form-control">
+              </div>
+      
+              <!-- Sales Account -->
+              <div class="form-group">
+                  <label for="salesAccount">Sales Account:</label>
+                  <input type="text" name="salesAccount" class="form-control">
+              </div>
+      
+              <!-- Sales Description -->
+              <div class="form-group">
+                  <label for="salesDescription">Sales Description:</label>
+                  <input type="text" name="salesDescription" class="form-control">
+              </div>
+      
+              <!-- Purchase Price -->
+              <div class="form-group">
+                  <label for="purchasePrice">Purchase Price:</label>
+                  <input type="number" name="purchasePrice" class="form-control">
+              </div>
+      
+              <!-- Purchase Account -->
+              <div class="form-group">
+                  <label for="purchaseAccount">Purchase Account:</label>
+                  <input type="text" name="purchaseAccount" class="form-control">
+              </div>
+      
+              <!-- Purchase Description -->
+              <div class="form-group">
+                  <label for="purchaseDescription">Purchase Description:</label>
+                  <input type="text" name="purchaseDescription" class="form-control">
+              </div>
+      
+              <!-- Minimum Stock to Maintain -->
+              <div class="form-group">
+                  <label for="minimumStockToMaintain">Minimum Stock to Maintain:</label>
+                  <input type="number" name="minimumStockToMaintain" class="form-control">
+              </div>
+      
+              <!-- Activation Tag -->
+              <div class="form-group">
+                  <label for="activationTag">Activation Tag:</label>
+                  <input type="text" name="activationTag" class="form-control" value="active">
+              </div>
+      
+              <!-- Inventory Account -->
+              <div class="form-group">
+                  <label for="inventoryAccount">Inventory Account:</label>
+                  <input type="text" name="inventoryAccount" class="form-control">
+              </div>
+      
+              <!-- Opening Stock -->
+              <div class="form-group">
+                  <label for="openingStock">Opening Stock:</label>
+                  <input type="number" name="openingStock" class="form-control" value="0">
+              </div>
+      
+              <!-- Opening Stock per Unit -->
+              <div class="form-group">
+                  <label for="openingStockPerUnit">Opening Stock per Unit:</label>
+                  <input type="number" name="openingStockPerUnit" class="form-control">
+              </div>
+      
+              <!-- Track Inventory -->
+              <div class="form-group">
+                  <label for="trackInventory">Track Inventory:</label>
+                  <input type="number" name="trackInventory" class="form-control">
+              </div>
+      
+              <!-- Save Button -->
+              <div class="form-group">
+                  <button type="submit" class="btn btn-success" id="saveItemBtn">Save</button>
+              </div>
+          </form>
+      </div>
+      
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+        </div>
+
       </div>
     </div>
   </div>
 
-</body>
+   <!-- Bootstrap dependencies -->
+   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+ 
+  
+
 
 {% endblock %}

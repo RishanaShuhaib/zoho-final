@@ -2,25 +2,21 @@
 {% block content %}
 {% load static %}
 
-<style>
-  table tr td:hover {
-    cursor: pointer;
-  }
-</style>
-
 <body>
   <div class="body-wrapper">
     <div class="container-fluid">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
-          <li class="breadcrumb-item" aria-current="page">Show Items Details</li>
+          <li class="breadcrumb-item" aria-current="page">Show Godown Details</li>
         </ol>
       </nav>
       <div style="overflow-x:auto;">
         <div class="mb-3">
-            <a href="{% url 'add_godown' %}" class="btn btn-primary">Add Item</a>
-          </div>
+          <a href="{% url 'add_godown' %}" class="btn btn-primary">
+            New <i class="fas fa-plus"></i>
+          </a>
+        </div>
         <div class="table-responsive">
           <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0); color: white;">
             <thead>
@@ -34,22 +30,22 @@
               </tr>
             </thead>
             <tbody>
-              {% for item in items %}
+              {% for godown in godowns %}
                 <tr class="border-bottom border-dark">
-                  <td>{{ item.date }}</td>
-                  <td>{{ item.godown_name }}</td>
-                  <td>{{ item.item_name }}</td>
-                  <td>{{ item.current_stock }}</td>
-                  <td>{{ item.activation_tag }}</td>
+                  <td>{{ godown.date }}</td>
+                  <td>{{ godown.godown_name }}</td>
+                  <td>{{ godown.item }}</td>
+                  <td>{{ godown.stock_keeping }}</td>
+                  <td></td>
                   <td>
                     <a href="#" style="color: white;">Delete</a>
-                    <!-- Replace 'delete_item' with your actual URL name for the delete view -->
+                    <!-- Replace 'delete_godown' with your actual URL name for the delete view -->
                   </td>
                 </tr>
               {% endfor %}
-              {% if items|length == 0 %}
+              {% if godowns|length == 0 %}
                 <tr class="border-bottom border-dark">
-                  <td colspan="6">No items to display.</td>
+                  <td colspan="6">No godowns to display.</td>
                 </tr>
               {% endif %}
             </tbody>

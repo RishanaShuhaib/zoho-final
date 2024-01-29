@@ -20,7 +20,6 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
   <style>
-
     /* Media query for screens smaller than 768 pixels (adjust the breakpoint as needed) */
     @media (max-width: 768px) {
       .hidden-icon {
@@ -40,7 +39,6 @@
     body{
       background-color: rgb(30, 30, 30);
       font-family: 'Lato', sans-serif;
-      color:white;
     }
     
 
@@ -158,11 +156,11 @@
                 <hr>
                 {% endif %}
                 {% if allmodules.stock_adjustment == 1  %}
-                <a href="" class="d-flex align-items-center gap-2 dropdown-item">
+                <a href="#" class="d-flex align-items-center gap-2 dropdown-item">
                   
                   <div class="d-flex">
                     <p class="mb-0 fs-3">Stock Adjustment</p>
-                    <a href=""><i class="fa fa-plus text-white" ></i></a>
+                    <a href="#"><i class="fa fa-plus text-white" ></i></a>
                   </div>
                 </a>
                 <hr>
@@ -171,7 +169,8 @@
                 <a href="" class="d-flex align-items-center gap-2 dropdown-item">
                   <!-- <i class="ti ti-user fs-6"></i> -->
                   <div class="d-flex">
-                    <p class="mb-0 fs-3">Godown</p>  <a href="{% url 'show_items' %}"><i class="fa fa-plus text-white" ></i></a>
+                    <p class="mb-0 fs-3">Godown</p>
+                    <a href="{% url 'show_godown_details' %}"><i class="fa fa-plus text-white" ></i></a>
                   </div>
                 </a>
                 <hr>
@@ -594,7 +593,7 @@
                   <!-- <i class="ti ti-mail fs-6"></i> -->
                   <div class="d-flex">
                     <p class="mb-0 fs-3">Holiday</p>
-                    <a href=""><i class="fa fa-plus text-white" ></i></a>
+                    <a href="{% url 'show_holidays' %}"><i class="fa fa-plus text-white" ></i></a>
                   </div>
                  
                 </a>
@@ -747,7 +746,8 @@
         </nav>
       </header>
     </div>
-    {% block content %}{% endblock content %}
+    {% block content %}
+    {% endblock content %}
 
   </div>
 

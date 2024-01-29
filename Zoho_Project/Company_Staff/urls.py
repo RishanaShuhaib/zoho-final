@@ -17,8 +17,13 @@ urlpatterns = [
     path('Company/Module-Editpage',views.company_module_editpage,name='company_module_editpage'),
     path('Company/Module-Edit',views.company_module_edit,name='company_module_edit'),
     path('Company/Renew/Payment_terms',views.company_renew_terms,name='company_renew_terms'),
-    path('Company/Show-Items', views.show_items, name='show_items'),
-    path('Company/add-godown', views.add_godown, name='add_godown'),
+    path('Company/Show-Godown-Details', views.show_godown_details, name='show_godown_details'),
+    path('Company/Add-Godown/', views.add_godown, name='add_godown'),
+    path('Company/Save-Item', views.save_item, name='save_item'),
+    path('Company/Save-Unit', views.save_unit, name='save_unit'),
+    path('Company/Show-Holidays/', views.show_holidays, name='show_holidays'),
+    path('Company/Add-Holiday/', views.add_holiday, name='add_holiday'),
+
     
 
 
