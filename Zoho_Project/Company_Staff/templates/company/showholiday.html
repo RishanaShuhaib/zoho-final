@@ -8,54 +8,236 @@
   }
 </style>
 
-<body>
-  <div class="body-wrapper">
-    <div class="container-fluid">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
-          <li class="breadcrumb-item" aria-current="page">Show Holiday Details</li>
-        </ol>
-      </nav>
-      <div style="overflow-x:auto;">
-        <div class="mb-3">
-          <a href="{% url 'add_holiday' %}" class="btn btn-primary">
-            New <i class="fas fa-plus"></i>
-          </a>
-        </div>
-        <div class="table-responsive">
-          <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0); color: white;">
-            <thead>
-              <tr class="border-bottom border-dark">
-                <th scope="col"><b>Sl. No</b></th>
-                <th scope="col"><b>Month</b></th>
-                <th scope="col"><b>Year</b></th>
-                <th scope="col"><b>Holidays</b></th>
-                <th scope="col"><b>Working Days</b></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% if holidays %}
-  {% for holiday in holidays %}
-    <tr class="border-bottom border-dark">
-      <td>{{ forloop.counter }}</td>
-      <td>{{ holiday.start_month|date:"F" }}</td>
-      <td>{{ holiday.start_month|date:"Y" }}</td>
-      <td>{{ holiday.holidays }}</td>
-      <td>{{ holiday.working_days }}</td>
-    </tr>
-  {% endfor %}
-{% else %}
-  <tr class="border-bottom border-dark">
-    <td colspan="6">No holiday records available.</td>
-  </tr>
-{% endif %}
-            </tbody>
-          </table>
+<div class="body-wrapper">
+  <div class="container-fluid">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+        <li class="breadcrumb-item" aria-current="page">All Holidays</li>
+      </ol>
+    </nav>
+    <p class="display-5 text-center"style="color:white;">All Holidays</p>
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+      
+      <div class="d-flex align-items-center">
+        <input type="text" id="searchInput" placeholder="Search Here..." class="mr-2">
+        <button onclick="searchTable()" class="btn btn-primary orange-btn">Search</button>
+      </div>
+      <div class="d-flex flex-column align-items-start">
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text btn btn-primary orange-btn">Sort</span>
+          </div>
+          <select id="sortOptions" class="form-control" onchange="applySort()">
+            <option value="all" selected>All</option>
+            <option value="1">Month</option>
+            <option value="2">Year</option>
+          </select>
+          
         </div>
       </div>
+
+      <div class="input-group-append">
+  <!-- Import button -->
+  <a href="#" class="btn btn-primary " onclick="importData()">
+    Import <i class="fas fa-upload"></i>
+  </a>
+  <!-- Export button -->
+  <a href="#" class="btn btn-primary" onclick="exportData()">
+    Export <i class="fas fa-file-export"></i>
+  </a>
+</div>
+      <a href="{% url 'add_holiday' %}" class="btn btn-primary">
+        New <i class="fas fa-plus"></i>
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0); color: white;">
+        <thead>
+          <tr class="border-bottom border-dark">
+            <th scope="col"><b>Sl. No</b></th>
+            <th scope="col"><b>Month</b></th>
+            <th scope="col"><b>Year</b></th>
+            <th scope="col"><b>Holidays</b></th>
+            <th scope="col"><b>Working Days</b></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if holidays %}
+            {% for holiday in holidays %}
+              <tr class="border-bottom border-dark">
+                <td>{{ forloop.counter }}</td>
+                {% if holiday.start_month == holiday.end_month %}
+                  <td>{{ holiday.start_month|date:"F" }}</td>
+                  <td>{{ holiday.start_month|date:"Y" }}</td>
+                {% else %}
+                  <td>{{ holiday.start_month|date:"F" }}  {{ holiday.end_month|date:"F" }}</td>
+                  <td>{{ holiday.start_month.year }}</td>
+                {% endif %}
+                <td>{{ holiday.holidays }}</td>
+                <td>{{ holiday.working_days }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr class="border-bottom border-dark">
+              <td colspan="5">No holiday records available.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
   </div>
-</body>
+</div>
 
+<script>
+  function searchTable() {
+    var input, filter, table, tr, td, i, j, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.querySelector("table");
+    tr = table.getElementsByTagName("tr");
+
+    for (i = 1; i < tr.length; i++) {
+      var found = false;
+      for (j = 0; j < tr[i].getElementsByTagName("td").length; j++) {
+        td = tr[i].getElementsByTagName("td")[j];
+        if (td) {
+          txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            found = true;
+            break;
+          }
+        }
+      }
+
+      if (found) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+
+  
+  function searchTable() {
+    var input, filter, table, tr, td, i, j, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.querySelector("table");
+    tr = table.getElementsByTagName("tr");
+
+    for (i = 1; i < tr.length; i++) {
+      var found = false;
+      for (j = 0; j < tr[i].getElementsByTagName("td").length; j++) {
+        td = tr[i].getElementsByTagName("td")[j];
+        if (td) {
+          txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            found = true;
+            break;
+          }
+        }
+      }
+
+      if (found) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+
+  function applySort() {
+    var selectedOption = document.getElementById("sortOptions").value;
+    
+    if (selectedOption === "all") {
+      resetTableOrder();
+      return;
+    }
+
+    var table, rows, switching, i, x, y, shouldSwitch;
+    table = document.querySelector("table");
+    switching = true;
+
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+
+      for (i = 1; i < rows.length - 1; i++) {
+        shouldSwitch = false;
+        x = rows[i].getElementsByTagName("td")[selectedOption].innerText.toLowerCase();
+        y = rows[i + 1].getElementsByTagName("td")[selectedOption].innerText.toLowerCase();
+
+        if (x > y) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+  }
+
+  function resetTableOrder() {
+    var table, rows, i;
+    table = document.querySelector("table");
+    rows = table.rows;
+
+    for (i = 1; i < rows.length - 1; i++) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+    }
+  }
+  function importData() {
+    var input = document.createElement('input');
+    input.type = 'file';
+
+    input.onchange = function (e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, { type: 'array' });
+        var sheetName = workbook.SheetNames[0];
+        var sheet = workbook.Sheets[sheetName];
+        var jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        // Assuming your table has a specific format, modify this part accordingly
+        // Clear existing table data
+        var tableBody = document.querySelector("table tbody");
+        tableBody.innerHTML = "";
+
+        // Populate table with imported data
+        for (var i = 0; i < jsonData.length; i++) {
+          var row = jsonData[i];
+          var tr = document.createElement("tr");
+          for (var j = 0; j < row.length; j++) {
+            var td = document.createElement("td");
+            td.textContent = row[j];
+            tr.appendChild(td);
+          }
+          tableBody.appendChild(tr);
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    };
+
+    input.click();
+  }
+
+  function exportData() {
+    var table = document.querySelector("table");
+    var sheet = XLSX.utils.table_to_sheet(table);
+    var workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, sheet, "Sheet1");
+    XLSX.writeFile(workbook, "holiday_details.xlsx");
+  }
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 {% endblock %}

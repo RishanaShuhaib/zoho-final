@@ -26,61 +26,85 @@
     }
 </style>
 
-<script>
-    $(document).ready(function () {
-        // Set today's date in the date field
-        var today = new Date().toISOString().split('T')[0];
-        $("#dateInput").val(today);
-    });
-</script>
+<style>
+    /* Responsive Styles */
+
+    /* For small screens */
+    @media (max-width: 576px) {
+        .container {
+            padding: 0;
+        }
+
+        .breadcrumb {
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb-item {
+            flex: 0 0 100%;
+        }
+
+        .container mt-3 {
+            padding: 15px;
+        }
+    }
+</style>
+
 
 <div class="body-wrapper">
     <div class="container-fluid">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}"
-                        class="text-warning-emphasis">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
                 <li class="breadcrumb-item" aria-current="page">Add Holiday</li>
             </ol>
         </nav>
 
-        <div class="container mt-3" style="background-color: black;">
+        <div class="container mt-3" style="color:white;">
             <h2 style="color: white;" class="text-center">Add Holiday</h2>
-            <form method="post" action="{% url 'add_holiday' %}">
+            <form method="post" action="{% url 'add_holiday' %}" id="holidayForm">
                 {% csrf_token %}
 
                 <!-- Holiday Name -->
-                <div>
+                <div class="form-group">
                     <label for="holidayName">Holiday Name:</label>
-                    <input type="text" name="holidayName" required>
+                    <input type="text" class="form-control" name="holidayName" required>
                 </div>
 
                 <!-- Start Date -->
-                <div>
+                <div class="form-group">
                     <label for="startDate">Start Date:</label>
-                    <input type="date" name="startDate" required>
+                    <input type="date" class="form-control" name="startDate" id="startDate" required>
                 </div>
 
                 <!-- End Date -->
-                <div>
+                <div class="form-group">
                     <label for="endDate">End Date:</label>
-                    <input type="date" name="endDate" required>
+                    <input type="date" class="form-control" name="endDate" id="endDate" required>
                 </div>
 
                 <!-- Terms and Conditions Checkbox -->
-                <div class="checkbox-container">
-                    <input type="checkbox" name="termsAndConditions" required>
-                    I agree to the terms and conditions
+                <div class="form-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" class="form-check-input" name="termsAndConditions" required>
+                        <label class="form-check-label" for="termsAndConditions">I agree to the terms and conditions</label>
+                    </div>
                 </div>
 
                 <!-- Save and Cancel Buttons -->
-                <div>
-                    <button type="submit">Save</button>
-                    <a href="#">Cancel</a>
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="#" class="btn btn-secondary" onclick="resetForm()">Cancel</a>
                 </div>
+                
             </form>
         </div>
     </div>
 </div>
 
+<script>
+    function resetForm() {
+        document.getElementById("holidayForm").reset();
+    }
+</script>
 {% endblock %}

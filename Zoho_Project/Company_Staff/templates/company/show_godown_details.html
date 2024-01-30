@@ -34,7 +34,13 @@
                 <tr class="border-bottom border-dark">
                   <td>{{ godown.date }}</td>
                   <td>{{ godown.godown_name }}</td>
-                  <td>{{ godown.item }}</td>
+                  <td>
+                    {% if godown.item_details %}
+                      {{ godown.item_details.item_name }}
+                    {% else %}
+                      N/A
+                    {% endif %}
+                  </td>
                   <td>{{ godown.stock_keeping }}</td>
                   <td></td>
                   <td>

@@ -135,7 +135,9 @@
                         <option value="{{ unit.id }}">{{ unit.unit_name }}</option>
                     {% endfor %}
                 </select>
-                
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUnitModal">
+                  Add Unit
+                </button>
             </div>
       
               <!-- HSN Code -->
@@ -250,13 +252,63 @@
       </div>
     </div>
   </div>
-
-   <!-- Bootstrap dependencies -->
-   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
- 
+  <div class="modal" id="addUnitModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
   
-
-
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Add Unit</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+  
+        <!-- Modal body -->
+        <div class="modal-body">
+          <form id="addUnitForm" method="post" action="{% url 'add_unit' %}">
+            {% csrf_token %}
+        
+            <!-- Unit Name -->
+            <div class="form-group">
+                <label for="unitName">Unit Name:</label>
+                <input type="text" name="unitName" class="form-control" required>
+            </div>
+        
+            <!-- Save Button -->
+            <div class="form-group">
+                <button type="submit" class="btn btn-success" id="saveUnitBtn">Save</button>
+            </div>
+        </form>
+        </div>
+  
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  
+  <script>
+      $(document).ready(function () {
+          // Handle the event when the "Add Unit" modal is about to be shown
+          $('#addUnitModal').on('show.bs.modal', function (e) {
+              // Check if the "Add Item" modal is open, and if so, fade it out
+              if ($('#myModal').hasClass('show')) {
+                  $('#myModal').modal('toggle');
+              }
+          });
+  
+          // Handle the event when the "Add Unit" modal is fully hidden
+          $('#addUnitModal').on('hidden.bs.modal', function (e) {
+              // Check if the "Add Item" modal was closed, and if so, fade it in
+              if (!$('#myModal').hasClass('show')) {
+                  $('#myModal').modal('toggle');
+              }
+          });
+      });
+  </script>
 {% endblock %}

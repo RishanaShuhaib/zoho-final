@@ -382,61 +382,44 @@ def company_renew_terms(request):
 def show_godown_details(request):
     godowns = Godown.objects.all()  # Retrieve all godown objects
     return render(request, 'company/show_godown_details.html', {'godowns': godowns})
+
 def add_godown(request):
     if request.method == 'POST':
         date = request.POST.get('date')
-        item_id = request.POST.get('item')
-        HSN = request.POST.get('HSN')
+        hsn = request.POST.get('HSN')
         stock_in_hand = request.POST.get('stock_in_hand')
         godown_name = request.POST.get('godownName')
         godown_address = request.POST.get('godownAddress')
         stock_keeping = request.POST.get('stockKeeping')
         distance = request.POST.get('kilometers')
+        item_id = request.POST.get('item')
 
-        # Check if 'login_id' is in session
-        if 'login_id' in request.session:
-            # Retrieve login_id from session
-            login_id = request.session['login_id']
-            
-            # Get the LoginDetails object
-            try:
-                login_details = LoginDetails.objects.get(id=login_id)
-            except LoginDetails.DoesNotExist:
-                # Handle the case where LoginDetails doesn't exist for the given login_id
-                return HttpResponse("LoginDetails not found for the given login_id.")
+        item = Items.objects.get(pk=item_id)
 
-            godown = Godown(
-                date=date,
-                item_id=item_id,
-                HSN=HSN,
-                stock_in_hand=stock_in_hand,
-                godown_name=godown_name,
-                godown_address=godown_address,
-                stock_keeping=stock_keeping,
-                distance=distance,
-                login_details=login_details
-            )
-            godown.save()
+        # Assuming you have a user associated with the request
+        company_details = request.user.companydetails
 
-            return redirect('show_godown_details')  # Redirect to the appropriate URL
+        godown = Godown.objects.create(
+            item=item,
+            date=date,
+            HSN=hsn,
+            stock_in_hand=stock_in_hand,
+            godown_name=godown_name,
+            godown_address=godown_address,
+            stock_keeping=stock_keeping,
+            distance=distance,
+            login_details=request.user  # assuming you have a user associated with the request
+        )
 
-        else:
-            # Handle the case where 'login_id' is not in session
-            return HttpResponse("Login ID not found in session. Please log in.")
+        return HttpResponse('Godown added successfully')  # You can redirect or render a success page
 
-    else:
-        # Render the form
-        items = Items.objects.all()
-        context = {'items': items}
-        return render(request, 'company/addgodown.html', context)
+    items = Items.objects.all()  # Assuming you have a method to get all items
+    return render(request, 'company/addgodown.html', {'items': items})
 def save_item(request):
-    units = Unit.objects.all()
-    context = {'units': units}
     if request.method == 'POST':
-        # Retrieve data from the POST request
         item_type = request.POST.get('itemType')
         item_name = request.POST.get('itemName')
-        unit_id = request.POST.get('unit')  # Assuming unit is the ID of the selected unit
+        unit_id = request.POST.get('unit')
         hsn_code = request.POST.get('hsnCode')
         tax_reference = request.POST.get('taxReference')
         intrastate_tax = request.POST.get('intrastateTax')
@@ -453,12 +436,10 @@ def save_item(request):
         opening_stock = request.POST.get('openingStock')
         opening_stock_per_unit = request.POST.get('openingStockPerUnit')
         track_inventory = request.POST.get('trackInventory')
-
-        # Assuming 'unit' is a ForeignKey in the Items model
+        company_details = request.user.companydetails
         unit = Unit.objects.get(pk=unit_id)
 
-        # Create a new Items instance and save it
-        item = Items(
+        item = Items.objects.create(
             item_type=item_type,
             item_name=item_name,
             unit=unit,
@@ -477,27 +458,37 @@ def save_item(request):
             inventory_account=inventory_account,
             opening_stock=opening_stock,
             opening_stock_per_unit=opening_stock_per_unit,
-            track_inventory=track_inventory
+            track_inventory=track_inventory,
+            company=company_details,
+            login_details=request.user  # Assuming you have a user associated with the request
         )
 
-        item.save()
+        return HttpResponse('Item saved successfully')  # You can redirect or render a success page
 
-        messages.success(request, 'Item saved successfully!')
-        return redirect("/")
-    else:
-        messages.error(request,'Invalid request method')
-        return redirect("/")
-def save_unit(request):
+    units = Unit.objects.all()  # Assuming you have a method to get all units
+    return render(request, 'company/addgodown.html', {'units': units})
+def add_unit(request):
     if request.method == 'POST':
         unit_name = request.POST.get('unitName')
 
-        # Save the new unit
-        unit = Unit(unit_name=unit_name, company=request.user.company)
-        unit.save()
+        if request.user.is_authenticated:
+            print(f"User authenticated: {request.user}")
+            try:
+                company_details = CompanyDetails.objects.get(login_details=request.user)
+                
+                unit = Unit.objects.create(
+                    unit_name=unit_name,
+                    company=company_details
+                )
 
-        return JsonResponse({'status': 'success'})
-    else:
-        return JsonResponse({'status': 'error'})
+                return HttpResponse('Unit added successfully')
+            except CompanyDetails.DoesNotExist:
+                return HttpResponse('Company details not found for the logged-in user or the user is not a Company')
+        else:
+            print("User not authenticated")
+            return HttpResponse('User not authenticated. Please check login status.')
+
+    return render(request, 'company/addgodown.html')
 
 def add_holiday(request):
     if 'login_id' in request.session:
@@ -550,6 +541,60 @@ def add_holiday(request):
     else:
         return redirect('/')
 
+def show_holidays(request):
+    holidays = Holiday.objects.filter(start_date__isnull=False, end_date__isnull=False).annotate(
+        start_month=TruncMonth('start_date'),
+        end_month=TruncMonth('end_date'),
+        day_of_month=ExtractDay('start_date'),
+        duration=ExpressionWrapper(F('end_date') - F('start_date'), output_field=fields.DurationField())
+    ).values('start_month', 'end_month', 'day_of_month', 'duration')
+
+    cumulative_counts = {}
+
+    for holiday in holidays:
+        current_month = holiday['start_month']
+
+        while current_month <= holiday['end_month']:
+            month_year_key = (current_month.year, current_month.month)
+
+            if holiday['duration'].days == 0:
+                working_days = count_days_in_month(current_month.year, current_month.month) - cumulative_counts.get(month_year_key, {}).get('holidays', 0)
+                holidays_count = 1
+            else:
+                start_day = max(holiday['day_of_month'], 1)
+                end_day = min(start_day + holiday['duration'].days - 1, count_days_in_month(current_month.year, current_month.month))
+                affected_days = max(end_day - start_day + 1, 0)
+
+                if current_month == holiday['start_month']:
+                    affected_days = min(affected_days, count_days_in_month(current_month.year, current_month.month) - holiday['day_of_month'] + 1)
+
+                remaining_days_in_second_month = (holiday['duration'].days-1) - affected_days
+
+
+                working_days = count_days_in_month(current_month.year, current_month.month) - affected_days
+                holidays_count = affected_days
+
+            if month_year_key in cumulative_counts:
+                cumulative_counts[month_year_key]['holidays'] += holidays_count
+                cumulative_counts[month_year_key]['working_days'] = count_days_in_month(current_month.year, current_month.month) - cumulative_counts[month_year_key]['holidays'] 
+                
+            else:
+                cumulative_counts[month_year_key] = {
+                    'working_days': working_days,
+                    'holidays': holidays_count,
+                    'start_month': current_month,
+                }
+
+            current_month = (current_month + relativedelta(months=1)).replace(day=1)
+
+    context = {'holidays': [{'month': value['start_month'].month, 'year': value['start_month'].year,
+                             'total_days': count_days_in_month(value['start_month'].year, value['start_month'].month),
+                             'cumulative_working_days': value['working_days'],
+                             'holidays_count': value['holidays'],
+                             **value} for value in cumulative_counts.values()]}
+    return render(request, 'company/showholiday.html', context)
+
+
 def count_days_in_month(year, month):
     if month in {1, 3, 5, 7, 8, 10, 12}:
         return 31
@@ -560,71 +605,6 @@ def count_days_in_month(year, month):
             return 28  # Non-leap year
     else:
         return 30
-
-def show_holidays(request):
-    # Assuming your Holiday model has 'start_date' and 'end_date' fields
-    holidays = Holiday.objects.filter(start_date__isnull=False, end_date__isnull=False).annotate(
-        start_month=TruncMonth('start_date'),
-        end_month=TruncMonth('end_date'),
-        day_of_month=ExtractDay('start_date'),
-        duration=ExpressionWrapper(F('end_date') - F('start_date'), output_field=fields.DurationField())
-    ).values('start_month', 'end_month', 'day_of_month', 'duration')
-
-    # Dictionary to keep track of cumulative counts
-    cumulative_counts = {}
-
-    for holiday in holidays:
-        current_month = holiday['start_month']
-
-        while current_month <= holiday['end_month']:
-            month_year_key = (current_month.year, current_month.month)
-
-            # Initialize remaining_days_in_second_month for each month
-            remaining_days_in_second_month = 0
-
-            if holiday['duration'].days == 0:  # Check if start date and end date are the same
-                working_days = count_days_in_month(current_month.year, current_month.month) - 1
-                holidays_count = 1
-            else:
-                # Calculate the number of days in the current month affected by the holiday
-                start_day = max(holiday['day_of_month'], 1)  # Ensure start_day is at least 1
-                end_day = min(start_day + holiday['duration'].days - 1, count_days_in_month(current_month.year, current_month.month))
-                affected_days = max(end_day - start_day + 1, 0)
-
-                if current_month == holiday['start_month']:
-                    # Adjust affected days for the first month
-                    affected_days = min(affected_days, count_days_in_month(current_month.year, current_month.month) - holiday['day_of_month'] + 1)
-
-                # Calculate the remaining days in the second month
-                remaining_days_in_second_month = holiday['duration'].days - affected_days
-
-                working_days = count_days_in_month(current_month.year, current_month.month) - affected_days
-                holidays_count = affected_days
-
-            if month_year_key in cumulative_counts:
-                # Update cumulative counts
-                cumulative_counts[month_year_key]['working_days'] += working_days - holidays_count
-                cumulative_counts[month_year_key]['remaining_days_in_second_month'] += remaining_days_in_second_month
-                cumulative_counts[month_year_key]['holidays'] += holidays_count
-            else:
-                # Add new entry in the dictionary
-                cumulative_counts[month_year_key] = {
-                    'working_days': working_days,
-                    'holidays': holidays_count,
-                    'remaining_days_in_second_month': remaining_days_in_second_month,
-                }
-
-            # Move to the next month using relativedelta
-            current_month = (current_month + relativedelta(months=1)).replace(day=1)
-
-    # Debugging output
-    print(cumulative_counts)
-
-    # Convert dictionary values to a list for rendering
-    context={'holidays': [{'month': key[1], 'year': key[0], **value, 'total_days': count_days_in_month(key[0], key[1])} for key, value in cumulative_counts.items()]}
-    return render(request, 'company/showholiday.html', context)
-
-
 # -------------------------------Staff section--------------------------------
 
 # staff dashboard

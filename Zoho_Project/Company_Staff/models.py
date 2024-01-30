@@ -1,16 +1,13 @@
 from django.db import models
-from Register_Login.models import *
+from Register_Login.models import CompanyDetails, LoginDetails
 
-# Create your models here.
-
-#---------------- models for zoho modules--------------------
 class Unit(models.Model):
     unit_name=models.CharField(max_length=255)
     company=models.ForeignKey(CompanyDetails,on_delete=models.CASCADE)
 class Items(models.Model):
     item_type=models.CharField(max_length=255)
     item_name=models.CharField(max_length=255)
-    unit=models.ForeignKey(Unit,on_delete=models.CASCADE)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
     hsn_code=models.IntegerField(null=True,blank=True)
     tax_reference=models.CharField(max_length=255,null=True)
     intrastate_tax=models.IntegerField(null=True,blank=True)
@@ -30,6 +27,7 @@ class Items(models.Model):
     date=models.DateTimeField(auto_now_add=True)                                       
 
     opening_stock=models.IntegerField(blank=True,null=True,default=0)
+    is_active = models.CharField(max_length=255)
     current_stock=models.IntegerField(blank=True,null=True,default=0)
     opening_stock_per_unit=models.IntegerField(blank=True,null=True,)
     company=models.ForeignKey(CompanyDetails,on_delete=models.CASCADE)
@@ -39,8 +37,8 @@ class Items(models.Model):
 
     track_inventory=models.IntegerField(blank=True,null=True)
 class Godown(models.Model):
+    item=models.ForeignKey(Items,on_delete=models.CASCADE)
     date = models.DateField()
-    item = models.ForeignKey(Items, on_delete=models.CASCADE)
     HSN = models.CharField(max_length=255)
     stock_in_hand = models.IntegerField()
     godown_name = models.CharField(max_length=255)
