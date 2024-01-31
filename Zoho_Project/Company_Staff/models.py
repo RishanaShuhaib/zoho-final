@@ -1,5 +1,5 @@
 from django.db import models
-from Register_Login.models import CompanyDetails, LoginDetails
+from Register_Login.models import *
 
 class Unit(models.Model):
     unit_name=models.CharField(max_length=255)
@@ -27,13 +27,11 @@ class Items(models.Model):
     date=models.DateTimeField(auto_now_add=True)                                       
 
     opening_stock=models.IntegerField(blank=True,null=True,default=0)
-    is_active = models.CharField(max_length=255)
+    is_active = models.CharField(max_length=255,null=True)
     current_stock=models.IntegerField(blank=True,null=True,default=0)
     opening_stock_per_unit=models.IntegerField(blank=True,null=True,)
     company=models.ForeignKey(CompanyDetails,on_delete=models.CASCADE)
     login_details=models.ForeignKey(LoginDetails,on_delete=models.CASCADE)
-
-    type=models.CharField(max_length=255,blank=True,null=True,)
 
     track_inventory=models.IntegerField(blank=True,null=True)
 class Godown(models.Model):
@@ -46,6 +44,7 @@ class Godown(models.Model):
     stock_keeping = models.IntegerField()
     distance = models.IntegerField()
     login_details = models.ForeignKey(LoginDetails, on_delete=models.CASCADE)
+    company = models.ForeignKey(CompanyDetails, on_delete=models.CASCADE, related_name='godowns')
 class Holiday(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)

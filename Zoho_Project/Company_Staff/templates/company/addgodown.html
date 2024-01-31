@@ -30,10 +30,22 @@
     background-color: #343a40; /* Dark modal background color */
     color: #ffffff; /* Light text color */
   }
+  /* Breadcrumb styles */
+  .breadcrumb {
+    color:orange; /* Light breadcrumb text color */
+  }
+
 </style>
 
 <div class="container custom-container">
-  <h2>Add Godown</h2>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'show_godown_details' %}" class="text-warning-emphasis">Show Godown Details</a></li>
+      <li class="breadcrumb-item " aria-current="page">Add Godown</li>
+    </ol>
+  </nav>
+  <p class="display-5 text-center">Add Godown</p>
   <form method="post" action="{% url 'add_godown' %}">
     {% csrf_token %}
 
@@ -45,22 +57,26 @@
     </div>
 
     <!-- Add Item Button -->
-    <div class="form-group">
-      <label for="item">Items:</label>
-      <div class="input-group">
-        <select id="selectItems" name="item" class="form-control" required>
+    
+<div class="form-group">
+  <label for="item">Items:</label>
+  <div class="input-group">
+      <select id="item" name="item" class="form-control">
+          <option value="" selected disabled>Select an Item</option>
           {% for item in items %}
-          <option value="{{ item.id }}">{{ item.item_name }}</option>
+              <option value="{{ item.id }}">{{ item.item_name }}</option>
           {% endfor %}
-        </select>
-        <div class="input-group-append">
+      </select>
+      <div class="input-group-append">
           <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
-            Add Item
+              Add Item
           </button>
-        </div>
       </div>
-    </div>
+  </div>
+</div>
 
+  
+    
     <!-- The Modal -->
     
     <!-- Godown Name -->
@@ -112,7 +128,7 @@
 
         <!-- Modal body -->
         <div class="modal-body">
-          <form id="addItemForm"action="{% url 'save_item' %}">
+          <form id="addItemForm"action="{% url 'save_item' %}"method="post">
               {% csrf_token %}
       
               <!-- Item Type -->
@@ -128,18 +144,22 @@
               </div>
       
               <!-- Unit -->
-              <div class="form-group">
-                <label for="unit">Unit:</label>
-                <select name="unit" class="form-control">
-                    {% for unit in units %}
-                        <option value="{{ unit.id }}">{{ unit.unit_name }}</option>
-                    {% endfor %}
-                </select>
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUnitModal">
-                  Add Unit
-                </button>
-            </div>
-      
+              <!-- Unit -->
+<!-- Unit -->
+<div class="form-group">
+  <label for="unit">Unit:</label>
+  <select name="unit" class="form-control">
+      <option value="" selected disabled>Select a Unit</option>
+      {% for unit in units %}
+          <option value="{{ unit.id }}">{{ unit.unit_name }}</option>
+      {% endfor %}
+  </select>
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUnitModal">
+      Add Unit
+  </button>
+</div>
+
+
               <!-- HSN Code -->
               <div class="form-group">
                   <label for="hsnCode">HSN Code:</label>
@@ -208,8 +228,8 @@
       
               <!-- Activation Tag -->
               <div class="form-group">
-                  <label for="activationTag">Activation Tag:</label>
-                  <input type="text" name="activationTag" class="form-control" value="active">
+                  <label for="is_active">Activation Tag:</label>
+                  <input type="text" name="is_active" class="form-control" >
               </div>
       
               <!-- Inventory Account -->
@@ -293,22 +313,23 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
   
   <script>
-      $(document).ready(function () {
-          // Handle the event when the "Add Unit" modal is about to be shown
-          $('#addUnitModal').on('show.bs.modal', function (e) {
-              // Check if the "Add Item" modal is open, and if so, fade it out
-              if ($('#myModal').hasClass('show')) {
-                  $('#myModal').modal('toggle');
-              }
-          });
-  
-          // Handle the event when the "Add Unit" modal is fully hidden
-          $('#addUnitModal').on('hidden.bs.modal', function (e) {
-              // Check if the "Add Item" modal was closed, and if so, fade it in
-              if (!$('#myModal').hasClass('show')) {
-                  $('#myModal').modal('toggle');
-              }
-          });
+    $(document).ready(function () {
+      // Handle the event when the "Add Unit" modal is about to be shown
+      $(document).on('show.bs.modal', '#addUnitModal', function (e) {
+          // Check if the "Add Item" modal is open, and if so, hide it
+          if ($('#myModal').hasClass('show')) {
+              $('#myModal').modal('hide');
+          }
       });
+  
+      // Handle the event when the "Add Unit" modal is fully hidden
+      $(document).on('hidden.bs.modal', '#addUnitModal', function (e) {
+          // Check if the "Add Item" modal was closed, and if so, show it
+          if (!$('#myModal').hasClass('show')) {
+              $('#myModal').modal('show');
+          }
+      });
+  });
+  
   </script>
 {% endblock %}

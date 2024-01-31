@@ -1,65 +1,325 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load static %}
+<style>
+  body {
+    background: black !important;
+  }
+  .btn-custom {
+    background: none !important;
+    color: orange !important;
+    border: 1px solid orange!important;
+}
 
-<body>
-  <div class="body-wrapper">
+/* Hover effect */
+.btn-custom:hover {
+    background: orange !important;
+    color: white!important;
+}
+</style>
+<div class="body-wrapper">
+  <div class="container-fluid">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb" style="background: black !important; color: orange !important;">
+        <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+        <li class="breadcrumb-item" aria-current="page">Show Godown Details</li>
+      </ol>
+    </nav>
+    <p class="display-5 text-center" style="color: white;">Godown Details</p>
     <div class="container-fluid">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
-          <li class="breadcrumb-item" aria-current="page">Show Godown Details</li>
-        </ol>
-      </nav>
-      <div style="overflow-x:auto;">
-        <div class="mb-3">
-          <a href="{% url 'add_godown' %}" class="btn btn-primary">
+      <div class="d-flex flex-wrap align-items-center" style="padding: 5px;">
+
+        <div class="d-flex flex-wrap">
+          <input type="text" id="searchInput" placeholder="Search Here..." class="mr-2 d-inline form-control mb-2 mb-md-0" style="width: 150px;">
+          <button onclick="searchTable()" class="btn btn-custom ml-md-2 mb-2 mb-md-0" style="padding-right: 5px;"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="ml-md-3">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-sort"></i></button>
+              <div class="dropdown-menu" style="color:white;">
+                <a class="dropdown-item" id="sortAll" href="#">All</a>
+                <a class="dropdown-item" id="sortGodownName" href="#">Godown Name</a>
+                <a class="dropdown-item" id="sortQuantity" href="#">Quantity</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ml-md-3">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <button class="btn btn-custom dropdown-toggle "  type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-filter"></i></button>
+              <div class="dropdown-menu" style="color:white;">
+                <a class="dropdown-item" href="#" onclick="applyFilter('all')">All</a>
+                <a class="dropdown-item" href="#" onclick="aapplyFilter('active')">Active</a>
+                <a class="dropdown-item" href="#" onclick="applyFilter('inactive')">Inactive</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ml-md-5">
+          <div class="input-group">
+            <a href="#" class="btn btn-custom ml-5" onclick="importData()" style="margin-left: 305px;">
+              Import <i class="fas fa-upload"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="ml-md-1">
+          <div class="input-group">
+            <a href="#" class="btn btn-custom " onclick="exportData()" style="margin-left: 1px; ">
+              Export <i class="fas fa-file-export"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="ml-md-auto">
+          <a href="{% url 'add_godown' %}" class="btn btn-custom" style="margin-left: 15px;">
             New <i class="fas fa-plus"></i>
           </a>
         </div>
-        <div class="table-responsive">
-          <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0); color: white;">
-            <thead>
-              <tr class="border-bottom border-dark">
-                <th scope="col"><b>Date</b></th>
-                <th scope="col"><b>Name</b></th>
-                <th scope="col"><b>Item</b></th>
-                <th scope="col"><b>Quantity</b></th>
-                <th scope="col"><b>Status</b></th>
-                <th scope="col"><b>Action</b></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for godown in godowns %}
-                <tr class="border-bottom border-dark">
-                  <td>{{ godown.date }}</td>
-                  <td>{{ godown.godown_name }}</td>
-                  <td>
-                    {% if godown.item_details %}
-                      {{ godown.item_details.item_name }}
-                    {% else %}
-                      N/A
-                    {% endif %}
-                  </td>
-                  <td>{{ godown.stock_keeping }}</td>
-                  <td></td>
-                  <td>
-                    <a href="#" style="color: white;">Delete</a>
-                    <!-- Replace 'delete_godown' with your actual URL name for the delete view -->
-                  </td>
-                </tr>
-              {% endfor %}
-              {% if godowns|length == 0 %}
-                <tr class="border-bottom border-dark">
-                  <td colspan="6">No godowns to display.</td>
-                </tr>
-              {% endif %}
-            </tbody>
-          </table>
-        </div>
+
       </div>
     </div>
-  </div>
-</body>
 
+    <div class="table-responsive">
+      <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0); color: white;">
+        <thead>
+          <tr class="border-bottom border-dark">
+            <th scope="col"><b>Date</b></th>
+            <th scope="col"><b>Name</b></th>
+            <th scope="col"><b>Item</b></th>
+            <th scope="col"><b>Quantity</b></th>
+            <th scope="col"><b>Status</b></th>
+            <th scope="col"><b>Action</b></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for godown in godowns %}
+          <tr class="border-bottom border-dark" onclick="redirectToOverview('{{ godown.id }}')" style="cursor: pointer;">
+            <td>{{ godown.date }}</td>
+            <td>{{ godown.godown_name }}</td>
+            <td>
+              {% if godown.item %}
+              {{ godown.item.item_name }}
+              {% else %}
+              N/A
+              {% endif %}
+            </td>
+            <td>{{ godown.stock_keeping }}</td>
+            <td>
+              {{ godown.item.is_active }}
+
+            </td>
+            <td>
+              <a href="{% url 'delete_godown' godown.id %}" style="color: white;">
+                <i class="fas fa-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+          {% if godowns|length == 0 %}
+          <tr class="border-bottom border-dark">
+            <td colspan="6">No godowns to display.</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+  function searchTable() {
+    // Declare variables
+    var input, filter, table, tr, td, i, j, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.querySelector(".table");
+    tr = table.getElementsByTagName("tr");
+
+    // Loop through all table rows
+    for (i = 0; i < tr.length; i++) {
+      // Skip the rows in thead
+      if (tr[i].getElementsByTagName("th").length > 0) {
+        continue;
+      }
+
+      var found = false;
+
+      // Loop through all columns in the current row
+      for (j = 0; j < tr[i].cells.length; j++) {
+        td = tr[i].getElementsByTagName("td")[j];
+
+        if (td) {
+          txtValue = td.textContent || td.innerText;
+
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            found = true;
+            break;
+          }
+        }
+      }
+
+      // Set display based on search result
+      if (found) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+
+  function importData() {
+    var input = document.createElement('input');
+    input.type = 'file';
+
+    input.onchange = function (e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, {
+          type: 'array'
+        });
+        var sheetName = workbook.SheetNames[0];
+        var sheet = workbook.Sheets[sheetName];
+        var jsonData = XLSX.utils.sheet_to_json(sheet, {
+          header: 1
+        });
+
+        // Assuming your table has a specific format, modify this part accordingly
+        // Clear existing table data
+        var tableBody = document.querySelector("table tbody");
+        tableBody.innerHTML = "";
+
+        // Populate table with imported data
+        for (var i = 0; i < jsonData.length; i++) {
+          var row = jsonData[i];
+          var tr = document.createElement("tr");
+          for (var j = 0; j < row.length; j++) {
+            var td = document.createElement("td");
+            td.textContent = row[j];
+            tr.appendChild(td);
+          }
+          tableBody.appendChild(tr);
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    };
+
+    input.click();
+  }
+
+  function exportData() {
+    // Get the table element by its class
+    var table = document.querySelector(".table");
+    // Convert the table to a sheet
+    var sheet = XLSX.utils.table_to_sheet(table);
+    // Create a workbook and add the sheet
+    var workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, sheet, "Sheet1");
+
+    // Save the workbook to an Excel file
+    XLSX.writeFile(workbook, "godown_details.xlsx");
+  }
+  var currentSortColumn = '';  // Variable to keep track of the current sort column
+
+  function sortTable(column) {
+    var table, rows, switching, i, x, y, shouldSwitch;
+    table = document.querySelector(".table");
+    switching = true;
+
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+
+      for (i = 1; i < (rows.length - 1); i++) {
+        shouldSwitch = false;
+
+        x = rows[i].getElementsByTagName("td")[column];
+        y = rows[i + 1].getElementsByTagName("td")[column];
+
+        // Check if the two rows should switch places
+        if (currentSortColumn === column && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        } else if (currentSortColumn !== column && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+
+    // Update the current sort column
+    currentSortColumn = column;
+  }
+
+  // Attach click event listeners to the sort buttons
+  document.getElementById('sortAll').addEventListener('click', function () {
+    sortTable(0);
+  });
+
+  document.getElementById('sortGodownName').addEventListener('click', function () {
+    sortTable(1);
+  });
+
+  document.getElementById('sortQuantity').addEventListener('click', function () {
+    sortTable(3);
+  });
+  function applyFilter(filterValue) {
+    var table, rows, i, td, status;
+    table = document.querySelector(".table");
+    rows = table.getElementsByTagName("tr");
+
+    filterValue = filterValue.toLowerCase(); // Convert filterValue to lowercase for accurate comparison
+
+    for (i = 1; i < rows.length; i++) {
+        td = rows[i].getElementsByTagName("td")[4]; // Assuming Status is in the 5th column
+
+        if (td) {
+            status = td.textContent || td.innerText;
+            status = status.trim().toLowerCase(); // Trim and convert to lowercase for accurate comparison
+
+            // Show/hide rows based on the filter value
+            if (
+                (filterValue === 'all') ||
+                (filterValue === 'active' && status === 'active' && status.length === 6 && status[0] === 'a' && status[1] === 'c' && status[2] === 't' && status[3] === 'i' && status[4] === 'v') ||
+                (filterValue === 'inactive' && status === 'inactive' && status.length === 8)
+            ) {
+                rows[i].style.display = "";
+            } else if (filterValue === 'active') {
+                rows[i].style.display = "none";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
+}
+
+
+</script>
+
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<script>
+  function redirectToOverview(godownId) {
+    // Redirect to the overview page with the specific godown ID
+    window.location.href = "{% url 'godown_overview' %}?godown_id=" + godownId;
+  }
+</script>
 {% endblock %}

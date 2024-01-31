@@ -3,106 +3,163 @@
 {% load static %}
 
 <style>
-  table tr td:hover {
-    cursor: pointer;
+  body {
+    background: black !important;
+  }
+
+  .btn-custom {
+    background: none !important;
+    color: orange !important;
+    border: 1px solid orange !important;
+  }
+
+  /* Hover effect */
+  .btn-custom:hover {
+    background: orange !important;
+    color: white !important;
   }
 </style>
 
 <div class="body-wrapper">
   <div class="container-fluid">
     <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
+      <ol class="breadcrumb" style="background: black !important; color: orange !important;">
         <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
-        <li class="breadcrumb-item" aria-current="page">All Holidays</li>
+        <li class="breadcrumb-item" aria-current="page">Godown Details</li>
       </ol>
     </nav>
-    <p class="display-5 text-center"style="color:white;">All Holidays</p>
-    <div class="mb-3 d-flex justify-content-between align-items-center">
-      
-      <div class="d-flex align-items-center">
-        <input type="text" id="searchInput" placeholder="Search Here..." class="mr-2">
-        <button onclick="searchTable()" class="btn btn-primary orange-btn">Search</button>
-      </div>
-      <div class="d-flex flex-column align-items-start">
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text btn btn-primary orange-btn">Sort</span>
-          </div>
-          <select id="sortOptions" class="form-control" onchange="applySort()">
-            <option value="all" selected>All</option>
-            <option value="1">Month</option>
-            <option value="2">Year</option>
-          </select>
-          
-        </div>
-      </div>
+    <p class="display-5 text-center" style="color: white;">Godown Details</p>
 
-      <div class="input-group-append">
-  <!-- Import button -->
-  <a href="#" class="btn btn-primary " onclick="importData()">
-    Import <i class="fas fa-upload"></i>
-  </a>
-  <!-- Export button -->
-  <a href="#" class="btn btn-primary" onclick="exportData()">
-    Export <i class="fas fa-file-export"></i>
-  </a>
-</div>
-      <a href="{% url 'add_holiday' %}" class="btn btn-primary">
-        New <i class="fas fa-plus"></i>
-      </a>
+    <div class="container-fluid">
+      <div class="d-flex flex-wrap align-items-center" style="padding: 5px;">
+
+        <div class="d-flex flex-wrap">
+          <input type="text" id="searchInput" placeholder="Search Here..." class="mr-2 d-inline form-control mb-2 mb-md-0" style="width: 150px;">
+          <button onclick="searchTable()" class="btn btn-custom ml-md-2 mb-2 mb-md-0" style="padding-right: 5px;"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="ml-md-3">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-sort"></i></button>
+              <div class="dropdown-menu" style="color:white;">
+                <a class="dropdown-item" href="#">A</a>
+                <a class="dropdown-item" href="#">B</a>
+                <a class="dropdown-item" href="#">C</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ml-md-3">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <button class="btn btn-custom dropdown-toggle " type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-filter"></i></button>
+              <div class="dropdown-menu" style="color:white;">
+                <a class="dropdown-item" href="#" onclick="applyFilter('A')">A</a>
+                <a class="dropdown-item" href="#" onclick="applyFilter('B')">B</a>
+                <a class="dropdown-item" href="#" onclick="applyFilter('C')">C</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ml-md-5">
+          <div class="input-group">
+            <a href="#" class="btn btn-custom ml-md-5" onclick="importData()">
+              Import <i class="fas fa-upload"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="ml-md-1">
+          <div class="input-group">
+            <a href="#" class="btn btn-custom" onclick="exportData()" style="margin-left: 1px;">
+              Export <i class="fas fa-file-export"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="ml-md-auto">
+          <a href="{% url 'add_godown' %}" class="btn btn-custom" style="margin-left: 15px;">
+            New <i class="fas fa-plus"></i>
+          </a>
+        </div>
+
+      </div>
     </div>
+
     <div class="table-responsive">
       <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0); color: white;">
         <thead>
           <tr class="border-bottom border-dark">
-            <th scope="col"><b>Sl. No</b></th>
-            <th scope="col"><b>Month</b></th>
-            <th scope="col"><b>Year</b></th>
-            <th scope="col"><b>Holidays</b></th>
-            <th scope="col"><b>Working Days</b></th>
+            <th scope="col"><b>Date</b></th>
+            <th scope="col"><b>Name</b></th>
+            <th scope="col"><b>Item</b></th>
+            <th scope="col"><b>Quantity</b></th>
+            <th scope="col"><b>Status</b></th>
+            <th scope="col"><b>Action</b></th>
           </tr>
         </thead>
         <tbody>
-          {% if holidays %}
-            {% for holiday in holidays %}
-              <tr class="border-bottom border-dark">
-                <td>{{ forloop.counter }}</td>
-                {% if holiday.start_month == holiday.end_month %}
-                  <td>{{ holiday.start_month|date:"F" }}</td>
-                  <td>{{ holiday.start_month|date:"Y" }}</td>
-                {% else %}
-                  <td>{{ holiday.start_month|date:"F" }}  {{ holiday.end_month|date:"F" }}</td>
-                  <td>{{ holiday.start_month.year }}</td>
-                {% endif %}
-                <td>{{ holiday.holidays }}</td>
-                <td>{{ holiday.working_days }}</td>
-              </tr>
-            {% endfor %}
-          {% else %}
-            <tr class="border-bottom border-dark">
-              <td colspan="5">No holiday records available.</td>
-            </tr>
+          {% for godown in godowns %}
+          <tr class="border-bottom border-dark">
+            <td>{{ godown.date }}</td>
+            <td>{{ godown.godown_name }}</td>
+            <td>
+              {% if godown.item %}
+              {{ godown.item.item_name }}
+              {% else %}
+              N/A
+              {% endif %}
+            </td>
+            <td>{{ godown.stock_keeping }}</td>
+            <td>
+              {{ godown.item.is_active }}
+            </td>
+            <td>
+              <a href="{% url 'delete_godown' godown.id %}" style="color: white;">
+                <i class="fas fa-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+          {% if godowns|length == 0 %}
+          <tr class="border-bottom border-dark">
+            <td colspan="6">No godowns to display.</td>
+          </tr>
           {% endif %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
-
+</div>
 <script>
   function searchTable() {
+    // Declare variables
     var input, filter, table, tr, td, i, j, txtValue;
     input = document.getElementById("searchInput");
     filter = input.value.toUpperCase();
-    table = document.querySelector("table");
+    table = document.querySelector(".table");
     tr = table.getElementsByTagName("tr");
 
-    for (i = 1; i < tr.length; i++) {
+    // Loop through all table rows
+    for (i = 0; i < tr.length; i++) {
+      // Skip the rows in thead
+      if (tr[i].getElementsByTagName("th").length > 0) {
+        continue;
+      }
+
       var found = false;
-      for (j = 0; j < tr[i].getElementsByTagName("td").length; j++) {
+
+      // Loop through all columns in the current row
+      for (j = 0; j < tr[i].cells.length; j++) {
         td = tr[i].getElementsByTagName("td")[j];
+
         if (td) {
           txtValue = td.textContent || td.innerText;
+
           if (txtValue.toUpperCase().indexOf(filter) > -1) {
             found = true;
             break;
@@ -110,6 +167,7 @@
         }
       }
 
+      // Set display based on search result
       if (found) {
         tr[i].style.display = "";
       } else {
@@ -118,78 +176,6 @@
     }
   }
 
-  
-  function searchTable() {
-    var input, filter, table, tr, td, i, j, txtValue;
-    input = document.getElementById("searchInput");
-    filter = input.value.toUpperCase();
-    table = document.querySelector("table");
-    tr = table.getElementsByTagName("tr");
-
-    for (i = 1; i < tr.length; i++) {
-      var found = false;
-      for (j = 0; j < tr[i].getElementsByTagName("td").length; j++) {
-        td = tr[i].getElementsByTagName("td")[j];
-        if (td) {
-          txtValue = td.textContent || td.innerText;
-          if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            found = true;
-            break;
-          }
-        }
-      }
-
-      if (found) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
-    }
-  }
-
-  function applySort() {
-    var selectedOption = document.getElementById("sortOptions").value;
-    
-    if (selectedOption === "all") {
-      resetTableOrder();
-      return;
-    }
-
-    var table, rows, switching, i, x, y, shouldSwitch;
-    table = document.querySelector("table");
-    switching = true;
-
-    while (switching) {
-      switching = false;
-      rows = table.rows;
-
-      for (i = 1; i < rows.length - 1; i++) {
-        shouldSwitch = false;
-        x = rows[i].getElementsByTagName("td")[selectedOption].innerText.toLowerCase();
-        y = rows[i + 1].getElementsByTagName("td")[selectedOption].innerText.toLowerCase();
-
-        if (x > y) {
-          shouldSwitch = true;
-          break;
-        }
-      }
-
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true;
-      }
-    }
-  }
-
-  function resetTableOrder() {
-    var table, rows, i;
-    table = document.querySelector("table");
-    rows = table.rows;
-
-    for (i = 1; i < rows.length - 1; i++) {
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-    }
-  }
   function importData() {
     var input = document.createElement('input');
     input.type = 'file';
@@ -201,10 +187,14 @@
       var reader = new FileReader();
       reader.onload = function (e) {
         var data = new Uint8Array(e.target.result);
-        var workbook = XLSX.read(data, { type: 'array' });
+        var workbook = XLSX.read(data, {
+          type: 'array'
+        });
         var sheetName = workbook.SheetNames[0];
         var sheet = workbook.Sheets[sheetName];
-        var jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        var jsonData = XLSX.utils.sheet_to_json(sheet, {
+          header: 1
+        });
 
         // Assuming your table has a specific format, modify this part accordingly
         // Clear existing table data
@@ -231,13 +221,23 @@
   }
 
   function exportData() {
-    var table = document.querySelector("table");
+    // Get the table element by its class
+    var table = document.querySelector(".table");
+    // Convert the table to a sheet
     var sheet = XLSX.utils.table_to_sheet(table);
+    // Create a workbook and add the sheet
     var workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, sheet, "Sheet1");
-    XLSX.writeFile(workbook, "holiday_details.xlsx");
-  }
 
+    // Save the workbook to an Excel file
+    XLSX.writeFile(workbook, "godown_details.xlsx");
+  }
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
 {% endblock %}

@@ -23,6 +23,8 @@ urlpatterns = [
     path('Company/Add-Unit', views.add_unit, name='add_unit'),
     path('Company/Show-Holidays/', views.show_holidays, name='show_holidays'),
     path('Company/Add-Holiday/', views.add_holiday, name='add_holiday'),
+    path('Company/Delete-Godown/<int:godown_id>/', views.delete_godown, name='delete_godown'),
+    path('Company/Godown-Overview/', views.godown_overview, name='godown_overview'),
 
     
 

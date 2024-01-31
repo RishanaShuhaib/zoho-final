@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Page Title</title>
+    <style>
+        .flex-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .flex-item {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #ccc;
+        }
+
+        .godown-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .godown-item {
+            cursor: pointer;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .godown-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .godown-details {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="flex-container">
+    <!-- First Flex Container - Godown List -->
+    <div class="flex-item col-md-3" id="godownList">
+        <h2 style="margin-top:110px;">Godown List</h2>
+        <ul class="godown-list">
+            <!-- Example Godown Items (Replace with dynamic data from Django) -->
+            {% for godown in godowns %}
+                <li class="godown-item" onclick="showGodownDetails({{ godown.id }})">{{ godown.godown_name }} - Stock: {{ godown.stock_keeping }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Second Flex Container - Godown Details -->
+    <div class="flex-item" id="godownDetails">
+        <h2>Godown Details</h2>
+        <div class="godown-details">
+            <!-- Godown details will be displayed here dynamically using JavaScript -->
+        </div>
+    </div>
+</div>
+
+<script>
+    function showGodownDetails(godownId) {
+        // Fetch godown details from Django views using AJAX
+        // Replace this with your actual endpoint for fetching godown details
+        // and update the HTML dynamically.
+
+        // Example AJAX request using Fetch API
+        fetch(`/get_godown_details/${godownId}/`)
+            .then(response => response.json())
+            .then(godownDetailsData => {
+                // Update the HTML with godown details
+                const godownDetailsContainer = document.getElementById('godownDetails');
+                godownDetailsContainer.innerHTML = `
+                    <h2>${godownDetailsData.godownName}</h2>
+                    <p>Stock Quantity: ${godownDetailsData.stockQuantity}</p>
+                    <!-- Add more details as needed -->
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+
+{% endblock %}

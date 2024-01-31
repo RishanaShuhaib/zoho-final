@@ -5,7 +5,7 @@ from Register_Login.views import logout
 from django.contrib import messages
 from django.conf import settings
 from datetime import date
-
+from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.db.models.functions import TruncMonth,Cast, TruncDate,ExtractDay
 from datetime import datetime, timedelta
@@ -378,15 +378,24 @@ def company_renew_terms(request):
             return redirect('company_profile')
     else:
         return redirect('/')
-
 def show_godown_details(request):
-    godowns = Godown.objects.all()  # Retrieve all godown objects
-    return render(request, 'company/show_godown_details.html', {'godowns': godowns})
-
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
+        try:
+            log_details = LoginDetails.objects.get(id=log_id)
+            company_details = log_details.companydetails_set.first()  # Assuming you have a related_name in LoginDetails model
+            godowns = Godown.objects.filter(item__unit__company=company_details)
+            return render(request, 'company/show_godown_details.html', {'godowns': godowns})
+        except (LoginDetails.DoesNotExist, CompanyDetails.DoesNotExist):
+            return HttpResponse("Login details or company details not found.")
+    else:
+        return redirect('/')
 def add_godown(request):
+    units = Unit.objects.all()
+    items = Items.objects.all()  # Define units and items outside the if block
     if request.method == 'POST':
         date = request.POST.get('date')
-        hsn = request.POST.get('HSN')
+        hsn = request.POST.get('HSN')  # Corrected field name
         stock_in_hand = request.POST.get('stock_in_hand')
         godown_name = request.POST.get('godownName')
         godown_address = request.POST.get('godownAddress')
@@ -394,29 +403,71 @@ def add_godown(request):
         distance = request.POST.get('kilometers')
         item_id = request.POST.get('item')
 
-        item = Items.objects.get(pk=item_id)
+        if 'login_id' in request.session:
+            login_id = request.session['login_id']
+            try:
+                # Get login details based on the logged-in user's login ID
+                login_details = LoginDetails.objects.get(id=login_id)
 
-        # Assuming you have a user associated with the request
-        company_details = request.user.companydetails
+                # Get company details associated with the login details
+                company_details = CompanyDetails.objects.get(login_details=login_details)
+                
+                # Get items associated with the company
+                items = Items.objects.filter(company=company_details)
+                
+                # Get the selected item based on the provided item ID
+                selected_item = items.get(pk=item_id)
+                
+                # Create a new godown instance and save it to the database
+                godown = Godown.objects.create(
+                    date=date,
+                    HSN=hsn,  # Corrected field name
+                    stock_in_hand=stock_in_hand,
+                    godown_name=godown_name,
+                    godown_address=godown_address,
+                    stock_keeping=stock_keeping,
+                    distance=distance,
+                    item=selected_item,
+                    login_details=login_details,  # Set the login_details field
+                    company=company_details
+                )
 
-        godown = Godown.objects.create(
-            item=item,
-            date=date,
-            HSN=hsn,
-            stock_in_hand=stock_in_hand,
-            godown_name=godown_name,
-            godown_address=godown_address,
-            stock_keeping=stock_keeping,
-            distance=distance,
-            login_details=request.user  # assuming you have a user associated with the request
-        )
+                return HttpResponse('Godown details saved successfully')  # You can redirect or render a success page
+            except LoginDetails.DoesNotExist:
+                return HttpResponse('Login details not found.')
+            except CompanyDetails.DoesNotExist:
+                return HttpResponse('Company details not found.')
+        else:
+            return redirect('/')
 
-        return HttpResponse('Godown added successfully')  # You can redirect or render a success page
+    return render(request, 'company/addgodown.html', {'items': items, 'units': units})
+def delete_godown(request, godown_id):
+    if 'login_id' in request.session:
+        login_id = request.session['login_id']
+        try:
+            # Get login details based on the logged-in user's login ID
+            login_details = LoginDetails.objects.get(id=login_id)
 
-    items = Items.objects.all()  # Assuming you have a method to get all items
-    return render(request, 'company/addgodown.html', {'items': items})
+            # Get company details associated with the login details
+            company_details = CompanyDetails.objects.get(login_details=login_details)
+
+            # Get the godown to delete
+            godown = get_object_or_404(Godown, id=godown_id, company=company_details)
+
+            # Delete the godown
+            godown.delete()
+
+            return redirect('show_godown_details')  # Redirect to the godown details page after deletion
+        except (LoginDetails.DoesNotExist, CompanyDetails.DoesNotExist):
+            return HttpResponse("Login details or company details not found.")
+    else:
+        return redirect('/')
 def save_item(request):
+    # Get all units available in the system
+    units = Unit.objects.all()
+
     if request.method == 'POST':
+        # Retrieve data from the POST request
         item_type = request.POST.get('itemType')
         item_name = request.POST.get('itemName')
         unit_id = request.POST.get('unit')
@@ -431,65 +482,100 @@ def save_item(request):
         purchase_account = request.POST.get('purchaseAccount')
         purchase_description = request.POST.get('purchaseDescription')
         minimum_stock_to_maintain = request.POST.get('minimumStockToMaintain')
-        activation_tag = request.POST.get('activationTag')
+        is_active = request.POST.get('is_active') 
         inventory_account = request.POST.get('inventoryAccount')
         opening_stock = request.POST.get('openingStock')
         opening_stock_per_unit = request.POST.get('openingStockPerUnit')
         track_inventory = request.POST.get('trackInventory')
-        company_details = request.user.companydetails
-        unit = Unit.objects.get(pk=unit_id)
+        
+        # Check if the user is logged in
+        if 'login_id' in request.session:
+            login_id = request.session['login_id']
+            try:
+                # Get login details based on the logged-in user's login ID
+                login_details = LoginDetails.objects.get(id=login_id)
 
-        item = Items.objects.create(
-            item_type=item_type,
-            item_name=item_name,
-            unit=unit,
-            hsn_code=hsn_code,
-            tax_reference=tax_reference,
-            intrastate_tax=intrastate_tax,
-            interstate_tax=interstate_tax,
-            selling_price=selling_price,
-            sales_account=sales_account,
-            sales_description=sales_description,
-            purchase_price=purchase_price,
-            purchase_account=purchase_account,
-            purchase_description=purchase_description,
-            minimum_stock_to_maintain=minimum_stock_to_maintain,
-            activation_tag=activation_tag,
-            inventory_account=inventory_account,
-            opening_stock=opening_stock,
-            opening_stock_per_unit=opening_stock_per_unit,
-            track_inventory=track_inventory,
-            company=company_details,
-            login_details=request.user  # Assuming you have a user associated with the request
-        )
+                # Get company details associated with the login details
+                company_details = CompanyDetails.objects.get(login_details=login_details)
+                
+                # Get units associated with the company
+                units = Unit.objects.filter(company=company_details)
+                
+                # Get the selected unit based on the provided unit ID
+                unit = units.get(pk=unit_id)
 
-        return HttpResponse('Item saved successfully')  # You can redirect or render a success page
+                # Create a new item instance and save it to the database
+                item = Items.objects.create(
+                    item_type=item_type,
+                    item_name=item_name,
+                    unit=unit,
+                    hsn_code=hsn_code,
+                    tax_reference=tax_reference,
+                    intrastate_tax=intrastate_tax,
+                    interstate_tax=interstate_tax,
+                    selling_price=selling_price,
+                    sales_account=sales_account,
+                    sales_description=sales_description,
+                    purchase_price=purchase_price,
+                    purchase_account=purchase_account,
+                    purchase_description=purchase_description,
+                    minimum_stock_to_maintain=minimum_stock_to_maintain,
+                    is_active=is_active,
+                    inventory_account=inventory_account,
+                    opening_stock=opening_stock,
+                    opening_stock_per_unit=opening_stock_per_unit,
+                    track_inventory=track_inventory,
+                    company=company_details,
+                    login_details=login_details  # Set the login_details field
+                )
 
-    units = Unit.objects.all()  # Assuming you have a method to get all units
+                return HttpResponse('Item saved successfully')  # You can redirect or render a success page
+            except LoginDetails.DoesNotExist:
+                return HttpResponse('Login details not found for the logged-in user.')
+            except CompanyDetails.DoesNotExist:
+                return HttpResponse('Company details not found for the logged-in user.')
+        else:
+            return redirect('/')
+    
+    # If the request method is not POST, render the form with the list of units
     return render(request, 'company/addgodown.html', {'units': units})
 def add_unit(request):
     if request.method == 'POST':
         unit_name = request.POST.get('unitName')
 
-        if request.user.is_authenticated:
-            print(f"User authenticated: {request.user}")
-            try:
-                company_details = CompanyDetails.objects.get(login_details=request.user)
-                
-                unit = Unit.objects.create(
-                    unit_name=unit_name,
-                    company=company_details
-                )
+        login_id = request.session.get('login_id')
 
-                return HttpResponse('Unit added successfully')
+        if login_id is not None:
+            print(f'Session Login ID: {login_id}')
+
+            try:
+                login_details = LoginDetails.objects.get(id=login_id)
+                company_details = CompanyDetails.objects.get(login_details=login_details)
+            except LoginDetails.DoesNotExist:
+                return HttpResponse('Login details not found for the logged-in user.')
             except CompanyDetails.DoesNotExist:
-                return HttpResponse('Company details not found for the logged-in user or the user is not a Company')
+                return HttpResponse('Company details not found for the logged-in user.')
+
+
+            unit = Unit.objects.create(
+                unit_name=unit_name,
+                company=company_details
+            )
+
+            return HttpResponse('Unit added successfully')  # You can redirect or render a success page
+
         else:
-            print("User not authenticated")
-            return HttpResponse('User not authenticated. Please check login status.')
+            print('User not logged in.')  # Log this for debugging
+            return HttpResponse('User not logged in.')  # Provide a meaningful response or redirect
 
     return render(request, 'company/addgodown.html')
-
+def godown_overview(request):
+    godown_id = request.GET.get('godown_id')
+    godown = get_object_or_404(Godown, id=godown_id)
+    
+    # Add any additional context data as needed
+    
+    return render(request, 'company/godown_overview.html', {'godown': godown})
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
@@ -540,7 +626,6 @@ def add_holiday(request):
             return render(request, 'company/addholiday.html', {'user_details': user_details})
     else:
         return redirect('/')
-
 def show_holidays(request):
     holidays = Holiday.objects.filter(start_date__isnull=False, end_date__isnull=False).annotate(
         start_month=TruncMonth('start_date'),
