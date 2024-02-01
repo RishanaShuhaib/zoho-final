@@ -19,15 +19,12 @@ urlpatterns = [
     path('Company/Renew/Payment_terms',views.company_renew_terms,name='company_renew_terms'),
     path('Company/Show-Godown-Details', views.show_godown_details, name='show_godown_details'),
     path('Company/Add-Godown/', views.add_godown, name='add_godown'),
+    path('Company/Delete-Godown/<int:godown_id>/', views.delete_godown, name='delete_godown'),
     path('Company/Save-Item', views.save_item, name='save_item'),
     path('Company/Add-Unit', views.add_unit, name='add_unit'),
     path('Company/Show-Holidays/', views.show_holidays, name='show_holidays'),
     path('Company/Add-Holiday/', views.add_holiday, name='add_holiday'),
-    path('Company/Delete-Godown/<int:godown_id>/', views.delete_godown, name='delete_godown'),
-    path('Company/Godown-Overview/', views.godown_overview, name='godown_overview'),
-
-    
-
+    path('Company/Godown-Overview/<int:godown_id>/', views.godown_overview, name='godown_overview'),
 
 
 

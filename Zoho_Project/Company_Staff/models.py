@@ -50,3 +50,4 @@ class Holiday(models.Model):
     end_date = models.DateField(null=True, blank=True)
     holiday_name = models.CharField(max_length=255, null=True, blank=True)
     user = models.ForeignKey(LoginDetails, on_delete=models.CASCADE, null=True, blank=True)
+    company=models.ForeignKey(CompanyDetails, on_delete=models.CASCADE, null=True, blank=True)

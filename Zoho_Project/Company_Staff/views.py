@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.conf import settings
 from datetime import date
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest,HttpResponseNotFound
 from django.db.models.functions import TruncMonth,Cast, TruncDate,ExtractDay
 from datetime import datetime, timedelta
 from django.http import JsonResponse
@@ -452,7 +452,7 @@ def delete_godown(request, godown_id):
             company_details = CompanyDetails.objects.get(login_details=login_details)
 
             # Get the godown to delete
-            godown = get_object_or_404(Godown, id=godown_id, company=company_details)
+            godown = get_object_or_404(company=company_details)
 
             # Delete the godown
             godown.delete()
@@ -569,13 +569,21 @@ def add_unit(request):
             return HttpResponse('User not logged in.')  # Provide a meaningful response or redirect
 
     return render(request, 'company/addgodown.html')
-def godown_overview(request):
-    godown_id = request.GET.get('godown_id')
-    godown = get_object_or_404(Godown, id=godown_id)
-    
-    # Add any additional context data as needed
-    
-    return render(request, 'company/godown_overview.html', {'godown': godown})
+def godown_overview(request, godown_id=None):
+    godowns = Godown.objects.all()
+
+    if godown_id:
+        try:
+            selected_godown = Godown.objects.get(id=godown_id)
+        except Godown.DoesNotExist:
+            # Handle the case when the specified godown does not exist
+            return HttpResponseNotFound("Godown not found")
+    else:
+        # Default to the first godown if no specific one is selected
+        selected_godown = godowns.first()
+
+    return render(request, 'company/godown_overview.html', {'godowns': godowns, 'selected_godown': selected_godown})
+
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
@@ -607,25 +615,40 @@ def add_holiday(request):
                 messages.error(request, 'A holiday with the same date range already exists.')
                 return HttpResponseBadRequest('A holiday with the same date range already exists.')
 
-            # Save the new holiday with the logged-in user's details
+            # Fetch the currently logged-in company details
+            try:
+                company_details = CompanyDetails.objects.get(login_details=log_details)
+            except CompanyDetails.DoesNotExist:
+                company_details = None
+
+            # Save the new holiday with the logged-in user's details and associated company
             holiday = Holiday(
                 holiday_name=holiday_name,
                 start_date=start_date,
                 end_date=end_date,
                 user=log_details,
+                company=company_details  # Associate the holiday with the company
             )
             holiday.save()
 
             messages.success(request, 'Holiday added successfully!')
             return redirect('show_holidays')
         else:  # Handle the GET request
+            # Fetch the currently logged-in company details
+            try:
+                company_details = CompanyDetails.objects.get(login_details=log_details)
+            except CompanyDetails.DoesNotExist:
+                company_details = None
+
             user_details = {
                 'user_id': log_details.id,
                 'username': log_details.username,
             }
-            return render(request, 'company/addholiday.html', {'user_details': user_details})
+
+            return render(request, 'company/addholiday.html', {'user_details': user_details, 'company_details': company_details})
     else:
         return redirect('/')
+
 def show_holidays(request):
     holidays = Holiday.objects.filter(start_date__isnull=False, end_date__isnull=False).annotate(
         start_month=TruncMonth('start_date'),

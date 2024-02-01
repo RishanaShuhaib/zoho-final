@@ -48,6 +48,9 @@
             padding: 15px;
         }
     }
+    .breadcrumb{
+        color:orange;
+    }
 </style>
 
 
@@ -56,6 +59,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'show_holidays' %}" class="text-warning-emphasis">All Holiday Details</a></li>
                 <li class="breadcrumb-item" aria-current="page">Add Holiday</li>
             </ol>
         </nav>

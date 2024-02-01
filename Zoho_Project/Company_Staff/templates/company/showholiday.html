@@ -25,10 +25,10 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb" style="background: black !important; color: orange !important;">
         <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
-        <li class="breadcrumb-item" aria-current="page">Godown Details</li>
+        <li class="breadcrumb-item" aria-current="page">All Holidays</li>
       </ol>
     </nav>
-    <p class="display-5 text-center" style="color: white;">Godown Details</p>
+    <p class="display-5 text-center" style="color: white;">All Holidays</p>
 
     <div class="container-fluid">
       <div class="d-flex flex-wrap align-items-center" style="padding: 5px;">
@@ -81,7 +81,7 @@
         </div>
 
         <div class="ml-md-auto">
-          <a href="{% url 'add_godown' %}" class="btn btn-custom" style="margin-left: 15px;">
+          <a href="{% url 'add_holiday' %}" class="btn btn-custom" style="margin-left: 15px;">
             New <i class="fas fa-plus"></i>
           </a>
         </div>
@@ -93,41 +93,33 @@
       <table class="table mt-lg-5 mt-2 rounded" style="background-color: rgb(0, 0, 0); color: white;">
         <thead>
           <tr class="border-bottom border-dark">
-            <th scope="col"><b>Date</b></th>
-            <th scope="col"><b>Name</b></th>
-            <th scope="col"><b>Item</b></th>
-            <th scope="col"><b>Quantity</b></th>
-            <th scope="col"><b>Status</b></th>
-            <th scope="col"><b>Action</b></th>
+            <th scope="col"><b>Sl. No</b></th>
+            <th scope="col"><b>Month</b></th>
+            <th scope="col"><b>Year</b></th>
+            <th scope="col"><b>Holidays</b></th>
+            <th scope="col"><b>Working Days</b></th>
           </tr>
         </thead>
         <tbody>
-          {% for godown in godowns %}
-          <tr class="border-bottom border-dark">
-            <td>{{ godown.date }}</td>
-            <td>{{ godown.godown_name }}</td>
-            <td>
-              {% if godown.item %}
-              {{ godown.item.item_name }}
-              {% else %}
-              N/A
-              {% endif %}
-            </td>
-            <td>{{ godown.stock_keeping }}</td>
-            <td>
-              {{ godown.item.is_active }}
-            </td>
-            <td>
-              <a href="{% url 'delete_godown' godown.id %}" style="color: white;">
-                <i class="fas fa-trash"></i>
-              </a>
-            </td>
-          </tr>
-          {% endfor %}
-          {% if godowns|length == 0 %}
-          <tr class="border-bottom border-dark">
-            <td colspan="6">No godowns to display.</td>
-          </tr>
+          {% if holidays %}
+            {% for holiday in holidays %}
+              <tr class="border-bottom border-dark">
+                <td>{{ forloop.counter }}</td>
+                {% if holiday.start_month == holiday.end_month %}
+                  <td>{{ holiday.start_month|date:"F" }}</td>
+                  <td>{{ holiday.start_month|date:"Y" }}</td>
+                {% else %}
+                  <td>{{ holiday.start_month|date:"F" }}  {{ holiday.end_month|date:"F" }}</td>
+                  <td>{{ holiday.start_month.year }}</td>
+                {% endif %}
+                <td>{{ holiday.holidays }}</td>
+                <td>{{ holiday.working_days }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr class="border-bottom border-dark">
+              <td colspan="5">No holiday records available.</td>
+            </tr>
           {% endif %}
         </tbody>
       </table>

@@ -8,21 +8,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Page Title</title>
     <style>
+        /* Your existing styles... */
+
         .flex-container {
             display: flex;
             height: 100vh;
+            flex-direction: column; /* Change to column layout on small screens */
         }
 
         .flex-item {
             flex: 1;
             padding: 20px;
-            overflow-y: auto;
             border-right: 1px solid #ccc;
         }
 
         .godown-list {
             list-style: none;
             padding: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .godown-item {
@@ -31,58 +35,224 @@
             border-bottom: 1px solid #eee;
         }
 
-        .godown-item:hover {
-            background-color: #f5f5f5;
-        }
-
         .godown-details {
             padding: 20px;
+        }
+
+        .godown-card {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        /* Updated style for the right vertical container */
+        .right-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Added style for the container holding both flex items in a row */
+        .flex-row {
+            display: flex;
+            flex: 1; /* Allow the flex items to grow and fill the available space */
+        }
+
+        /* Media query for small screens */
+        @media screen and (max-width: 768px) {
+            .flex-container {
+                flex-direction: column; /* Switch to column layout on small screens */
+            }
+
+            .flex-item, .right-container {
+                border-right: none; /* Remove border on small screens */
+                border-bottom: 1px solid #ccc; /* Add bottom border for separation */
+            }
+        }
+        body{
+            color:white;
+        }
+        .godown-card {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 15px; /* Adjust the font size as needed */
+        }
+        .godown-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px; /* Adjust the margin as needed */
+        }
+        
+        .godown-table th, .godown-table td {
+            padding: 10px;
+            text-align: left;
+        }
+        .godown-table th {
+            background-color: #f5f5f5; /* Header background color */
+            color:black;
+        }
+        .btn-custom {
+            background: none !important;
+            color: orange !important;
+            border: 1px solid orange!important;
+        }
+        
+        /* Hover effect */
+        .btn-custom:hover {
+            background: orange !important;
+            color: white!important;
         }
     </style>
 </head>
 <body>
+    <div class="body-wrapper">
+    <div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb" style=" color: orange !important;">
+            <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'show_godown_details' %}" class="text-warning-emphasis">All Godowns </a></li>
+            <li class="breadcrumb-item" aria-current="page">Godown Details</li>
+        </ol>
+    <!-- Container holding both flex items in a row -->
+    <div class="flex-row">
 
-<div class="flex-container">
-    <!-- First Flex Container - Godown List -->
-    <div class="flex-item col-md-3" id="godownList">
-        <h2 style="margin-top:110px;">Godown List</h2>
-        <ul class="godown-list">
-            <!-- Example Godown Items (Replace with dynamic data from Django) -->
-            {% for godown in godowns %}
-                <li class="godown-item" onclick="showGodownDetails({{ godown.id }})">{{ godown.godown_name }} - Stock: {{ godown.stock_keeping }}</li>
-            {% endfor %}
-        </ul>
-    </div>
+        <!-- Left Vertical Container - Godown List -->
+        <div class="flex-item col-md-2mm " id="godownList">
+            
+            <h2 style="color:white;">Godown List</h2>
+            <div class="container">
+                <div class="row">
+                    <!-- Search input and button -->
+                    <div class="col-md-6 mb-2 mb-md-0">
+                        <div class="d-flex">
+                            <input type="text" id="searchInput" placeholder="Search Here..." class="mr-2 d-inline form-control" style="width: 150px;">
+                            <button onclick="searchTable()" class="btn btn-custom ml-md-2" style="padding-right: 5px;"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+            
+                    <!-- Sort dropdown -->
+                    <div class="col-md-2 mb-2 mb-md-0">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Sort <i class="fas fa-sort"></i></button>
+                                <div class="dropdown-menu" style="color:white;">
+                                    <a class="dropdown-item" id="sortAll" href="#">All</a>
+                                    <a class="dropdown-item" id="sortGodownName" href="#">Godown Name</a>
+                                    <a class="dropdown-item" id="sortQuantity" href="#">Quantity</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Filter dropdown -->
+                    <div class="col-md-2 mb-2 mb-md-0">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-filter"></i></button>
+                                <div class="dropdown-menu" style="color:white;">
+                                    <a class="dropdown-item" href="#" onclick="applyFilter('all')">All</a>
+                                    <a class="dropdown-item" href="#" onclick="applyFilter('active')">Active</a>
+                                    <a class="dropdown-item" href="#" onclick="applyFilter('inactive')">Inactive</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- New button -->
+                    <div class="col-md-2 ml-md-auto">
+                        <a href="{% url 'add_godown' %}" class="btn btn-custom" style="margin-left: 15px;">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <table class="godown-table">
+                <thead>
+                    <tr>
+                        <th>Godown Name</th>
+                        <th>Stock In Hand</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Example Godown Items (Replace with dynamic data from Django) -->
+                    {% for godown in godowns %}
+                        <tr class="godown-item" onclick="updateGodownDetails('{{ godown.godown_name }}', '{{ godown.item.item_name }}', '{{ godown.date }}', '{{ godown.HSN }}', '{{ godown.stock_in_hand }}','{{ godown.godown_address }}','{{ godown.stock_keeping }}','{{ godown.distance }}')">
+                            <td>{{ godown.godown_name }}</td>
+                            <td>{{ godown.stock_in_hand }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Second Flex Container - Godown Details -->
-    <div class="flex-item" id="godownDetails">
-        <h2>Godown Details</h2>
-        <div class="godown-details">
-            <!-- Godown details will be displayed here dynamically using JavaScript -->
+        <!-- Right Vertical Container - Godown Details -->
+        <div class="flex-item col-md-5 right-container" id="godownDetails">
+            <div class="godown-details" style="margin-top: 100px;background:white;color:black;">
+                <div class="godown-card " id="selectedGodownDetails">
+                    <h3 align="center" style="color:black; font-size: 20px; margin-bottom: 15px;">Godown Details</h3>
+                    <p><strong>Godown Name:</strong> </strong><span id="godownName"></span></p>
+                    <p><strong>Item Name:</strong> <span id="itemName"></span></p>
+                    <p><strong>Date:</strong> <span id="godownDate"></span></p>
+                    <p><strong>HSN: </strong><span id="godownHSN"></span></p>
+                    <p><strong>Stock In Hand:</strong><span id="godownStock"></span></p>
+                    <p><strong>Godown Address:</strong><span id="godownAddress"></span></p>
+                    <p><strong>Stock Keeping: </strong><span id="godownStockKeeping"></span></p>
+                    <p><strong>Distance: </strong><span id="godownDistance"></span></p>
+                    <!-- Add more details as needed -->
+                </div>
+            </div>
         </div>
     </div>
 </div>
+</div>
+    <script>
+        function updateGodownDetails(godownName, itemName, date, HSN, stock, address, stockkeeping, distance) {
+            // Update details in the right container
+            document.getElementById('godownName').innerText = godownName;
+            document.getElementById('itemName').innerText = itemName;
+            document.getElementById('godownDate').innerText = date;
+            document.getElementById('godownHSN').innerText = HSN;
+            document.getElementById('godownStock').innerText = stock;
+            document.getElementById('godownAddress').innerText = address;
+            document.getElementById('godownStockKeeping').innerText = stockkeeping;
+            document.getElementById('godownDistance').innerText = distance;
+            // Add more details update as needed
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            var dropdowns = document.querySelectorAll('.dropdown-toggle');
+            dropdowns.forEach(function (dropdown) {
+                new bootstrap.Dropdown(dropdown);
+            });
+        });
+        function searchTable() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.querySelector(".godown-table");
+            tr = table.getElementsByTagName("tr");
+        
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[0]; // Adjust index based on the column you want to search
+        
+                // Check if td is not null or undefined
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+        
+                    // Convert both filter and text content to uppercase for case-insensitive search
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-<script>
-    function showGodownDetails(godownId) {
-        // Fetch godown details from Django views using AJAX
-        // Replace this with your actual endpoint for fetching godown details
-        // and update the HTML dynamically.
-
-        // Example AJAX request using Fetch API
-        fetch(`/get_godown_details/${godownId}/`)
-            .then(response => response.json())
-            .then(godownDetailsData => {
-                // Update the HTML with godown details
-                const godownDetailsContainer = document.getElementById('godownDetails');
-                godownDetailsContainer.innerHTML = `
-                    <h2>${godownDetailsData.godownName}</h2>
-                    <p>Stock Quantity: ${godownDetailsData.stockQuantity}</p>
-                    <!-- Add more details as needed -->
-                `;
-            })
-            .catch(error => console.error('Error:', error));
-    }
-</script>
-
+</body>
+</html>
 {% endblock %}

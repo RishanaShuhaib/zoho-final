@@ -45,7 +45,7 @@
       <li class="breadcrumb-item " aria-current="page">Add Godown</li>
     </ol>
   </nav>
-  <p class="display-5 text-center">Add Godown</p>
+  <p class="display-5 text-center" style="color: white;">Add Godown</p>
   <form method="post" action="{% url 'add_godown' %}">
     {% csrf_token %}
 
@@ -58,23 +58,23 @@
 
     <!-- Add Item Button -->
     
-<div class="form-group">
-  <label for="item">Items:</label>
-  <div class="input-group">
-      <select id="item" name="item" class="form-control">
-          <option value="" selected disabled>Select an Item</option>
-          {% for item in items %}
-              <option value="{{ item.id }}">{{ item.item_name }}</option>
-          {% endfor %}
-      </select>
-      <div class="input-group-append">
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
-              Add Item
-          </button>
+    <div class="form-group">
+      <label for="item">Items:</label>
+      <div class="input-group">
+          <select id="item" name="item" class="form-control w-100 dropdown-menu-right">
+              <option value="" selected disabled>Select an Item</option>
+              {% for item in items %}
+                  <option value="{{ item.id }}">{{ item.item_name }}</option>
+              {% endfor %}
+          </select>
+          <div class="input-group-append">
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+                  Add Item
+              </button>
+          </div>
       </div>
   </div>
-</div>
-
+  
   
     
     <!-- The Modal -->
@@ -111,7 +111,7 @@
     </div>
 
     <!-- Save and Cancel Buttons -->
-    <div class="form-group">
+    <div class="form-group text-center">
       <button type="submit" class="btn btn-success">Save</button>
       <a href="#" class="btn btn-secondary">Cancel</a>
     </div>
@@ -308,6 +308,7 @@
       </div>
     </div>
   </div>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -331,5 +332,10 @@
       });
   });
   
+  </script>
+  <script>
+    $(document).ready(function () {
+      $('.dropdown-toggle').dropdown();
+    });
   </script>
 {% endblock %}
