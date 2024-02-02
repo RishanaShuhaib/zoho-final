@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<style>
+    body,h2{
+        color:white;
+    }
+</style>
+<!-- Your existing head and style section -->
+
+<body>
+    <div class="body-wrapper">
+        <div class="container-fluid">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb" style="color: orange !important;">
+                    <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'show_godown_details' %}" class="text-warning-emphasis">All Godowns </a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'godown_overview' %}" class="text-warning-emphasis">Godown Overview</a></li>
+                    <li class="breadcrumb-item" aria-current="page">Edit Godown Details</li>
+                </ol>
+            </nav>
+            <h2 align="center">Edit Godown Details</h2>
+            <form id="editGodownForm" method="post">
+                {% csrf_token %}
+
+                <!-- Item selection -->
+                <div class="form-group">
+                    <label for="editedGodownItem">Item:</label>
+                    <select id="editedGodownItem" name="editedGodownItem" class="form-control" required>
+                        {% for item in items %}
+                            <option value="{{ item.id }}" {% if item.id == godown.item.id %}selected{% endif %}>{{ item.item_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Date input -->
+                <div class="form-group">
+                    <label for="editedGodownDate">Date:</label>
+                    <input type="date" id="editedGodownDate" name="editedGodownDate" value="{{ godown.date }}" class="form-control" required>
+                </div>
+
+                <!-- HSN input -->
+                <div class="form-group">
+                    <label for="editedGodownHSN">HSN:</label>
+                    <input type="text" id="editedGodownHSN" name="editedGodownHSN" value="{{ godown.HSN }}" class="form-control" required>
+                </div>
+
+                <!-- Stock in hand input -->
+                <div class="form-group">
+                    <label for="editedGodownStock">Stock In Hand:</label>
+                    <input type="number" id="editedGodownStock" name="editedGodownStock" value="{{ godown.stock_in_hand }}" class="form-control" required>
+                </div>
+
+                <!-- Godown name input -->
+                <div class="form-group">
+                    <label for="editedGodownName">Godown Name:</label>
+                    <input type="text" id="editedGodownName" name="editedGodownName" value="{{ godown.godown_name }}" class="form-control" required>
+                </div>
+
+                <!-- Godown address input -->
+                <div class="form-group">
+                    <label for="editedGodownAddress">Godown Address:</label>
+                    <input type="text" id="editedGodownAddress" name="editedGodownAddress" value="{{ godown.godown_address }}" class="form-control" required>
+                </div>
+
+                <!-- Stock keeping input -->
+                <div class="form-group">
+                    <label for="editedGodownStockKeeping">Stock Keeping:</label>
+                    <input type="number" id="editedGodownStockKeeping" name="editedGodownStockKeeping" value="{{ godown.stock_keeping }}" class="form-control" required>
+                </div>
+
+                <!-- Distance input -->
+                <div class="form-group">
+                    <label for="editedGodownDistance">Distance:</label>
+                    <input type="number" id="editedGodownDistance" name="editedGodownDistance" value="{{ godown.distance }}" class="form-control" required>
+                </div>
+
+                <!-- Save Changes button -->
+                <button type="submit" class="btn btn-custom"><i class="fas fa-save"></i> Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap and other scripts (if needed) -->
+
+</body>
+</html>
+{% endblock %}

@@ -3,6 +3,7 @@
 <html lang="en">
 
 <head>
+  
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ZOHO BOOKS</title>
@@ -156,11 +157,11 @@
                 <hr>
                 {% endif %}
                 {% if allmodules.stock_adjustment == 1  %}
-                <a href="#" class="d-flex align-items-center gap-2 dropdown-item">
+                <a href="" class="d-flex align-items-center gap-2 dropdown-item">
                   
                   <div class="d-flex">
                     <p class="mb-0 fs-3">Stock Adjustment</p>
-                    <a href="#"><i class="fa fa-plus text-white" ></i></a>
+                    <a href=""><i class="fa fa-plus text-white" ></i></a>
                   </div>
                 </a>
                 <hr>
@@ -592,7 +593,7 @@
                 <a href="" class="d-flex align-items-center gap-2 dropdown-item">
                   <!-- <i class="ti ti-mail fs-6"></i> -->
                   <div class="d-flex">
-                    <p class="mb-0 fs-3">Holiday</p></a>
+                    <p class="mb-0 fs-3">Holiday</p>
                     <a href="{% url 'show_holidays' %}"><i class="fa fa-plus text-white" ></i></a>
                   </div>
                  
@@ -600,7 +601,7 @@
                 <hr>
                 {% endif %}
                 {% if allmodules.attendance == 1  %}
-                <a href="" class="d-flex align-items-center gap-2 dropdown-item">
+                <a href="#" class="d-flex align-items-center gap-2 dropdown-item">
                   <!-- <i class="ti ti-mail fs-6"></i> -->
                   <div class="d-flex">
                     <p class="mb-0 fs-3">Attendance</p>
@@ -746,8 +747,7 @@
         </nav>
       </header>
     </div>
-    {% block content %}
-    {% endblock content %}
+    {% block content %}{% endblock content %}
 
   </div>
 

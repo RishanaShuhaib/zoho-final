@@ -569,6 +569,7 @@ def add_unit(request):
             return HttpResponse('User not logged in.')  # Provide a meaningful response or redirect
 
     return render(request, 'company/addgodown.html')
+
 def godown_overview(request, godown_id=None):
     godowns = Godown.objects.all()
 
@@ -583,7 +584,32 @@ def godown_overview(request, godown_id=None):
         selected_godown = godowns.first()
 
     return render(request, 'company/godown_overview.html', {'godowns': godowns, 'selected_godown': selected_godown})
+def edit_page(request):
+    item=Items.objects.all()
+    return render(request,'company/edit_godown.html',{'item':item})
+def edit_godown(request, godown_id):
+    godown = get_object_or_404(Godown, id=godown_id)
+    items = Items.objects.all()
 
+    if request.method == 'POST':
+        godown.item = get_object_or_404(Items, id=request.POST.get('editedGodownItem'))
+        godown.date = request.POST.get('editedGodownDate')
+        godown.HSN = request.POST.get('editedGodownHSN')
+        godown.stock_in_hand = request.POST.get('editedGodownStock')
+        godown.godown_name = request.POST.get('editedGodownName')
+        godown.godown_address = request.POST.get('editedGodownAddress')
+        godown.stock_keeping = request.POST.get('editedGodownStockKeeping')
+        godown.distance = request.POST.get('editedGodownDistance')
+
+        # Assuming LoginDetails and CompanyDetails models are defined
+        godown.login_details = get_object_or_404(LoginDetails, id=request.POST.get('editedGodownLoginDetails'))
+        godown.company = get_object_or_404(CompanyDetails, id=request.POST.get('editedGodownCompany'))
+
+        godown.save()
+
+        return HttpResponse("Godown details edited successfully!")
+
+    return render(request, 'company/edit_godown.html', {'godown': godown, 'items': items})
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']

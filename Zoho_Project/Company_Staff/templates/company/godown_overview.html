@@ -8,101 +8,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Page Title</title>
     <style>
-        /* Your existing styles... */
-
         .flex-container {
             display: flex;
             height: 100vh;
             flex-direction: column; /* Change to column layout on small screens */
         }
-
+    
         .flex-item {
-            flex: 1;
-            padding: 20px;
+            flex: 1 3; /* Adjust the values as needed (flex-grow flex-shrink) */
+            padding: 2px;
             border-right: 1px solid #ccc;
         }
-
+        #godownList {
+            width: 30%; /* Adjust the percentage as needed */
+        }
+        #godownDetails{
+            width:70%;
+        }
+        #godownList {
+            flex: 1; /* Adjust the flex value as needed */
+        }
+        
+        #godownDetails {
+            flex: 2; /* Adjust the flex value as needed */
+        }
+        
+        /* Media query for smaller screens */
+        @media screen and (max-width: 992px) {
+            #godownList {
+                width: 100%; /* Full width on smaller screens */
+            }
+            #godownDetails {
+                width: 100%; /* Full width on smaller screens */
+            }
+        }
         .godown-list {
             list-style: none;
             padding: 0;
             display: flex;
             flex-direction: column;
         }
-
+    
         .godown-item {
             cursor: pointer;
             padding: 10px;
             border-bottom: 1px solid #eee;
         }
-
+    
         .godown-details {
             padding: 20px;
         }
-
+    
         .godown-card {
             border: 1px solid #ccc;
             margin-bottom: 10px;
             padding: 10px;
         }
-
+    
         /* Updated style for the right vertical container */
         .right-container {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
         }
-
+    
         /* Added style for the container holding both flex items in a row */
         .flex-row {
             display: flex;
             flex: 1; /* Allow the flex items to grow and fill the available space */
         }
-
-        /* Media query for small screens */
-        @media screen and (max-width: 768px) {
-            .flex-container {
-                flex-direction: column; /* Switch to column layout on small screens */
-            }
-
-            .flex-item, .right-container {
-                border-right: none; /* Remove border on small screens */
-                border-bottom: 1px solid #ccc; /* Add bottom border for separation */
-            }
-        }
-        body{
-            color:white;
-        }
+    
         .godown-card {
             border: 1px solid #ccc;
             margin-bottom: 10px;
             padding: 10px;
             font-size: 15px; /* Adjust the font size as needed */
         }
+    
         .godown-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px; /* Adjust the margin as needed */
         }
-        
-        .godown-table th, .godown-table td {
+    
+        .godown-table th,
+        .godown-table td {
             padding: 10px;
             text-align: left;
         }
+    
         .godown-table th {
             background-color: #f5f5f5; /* Header background color */
-            color:black;
+            color: black;
         }
+    
         .btn-custom {
             background: none !important;
             color: orange !important;
-            border: 1px solid orange!important;
+            border: 1px solid orange !important;
+            padding:1 px;;
+        }
+    
+        /* Hover effect */
+        .btn-custom:hover {
+            background: orange !important;
+            color: white !important;
+        }
+    
+        body {
+            color: white;
+        }
+    
+        /* Media query for small screens */
+        @media screen and (max-width: 992px) {
+            .flex-container {
+                flex-direction: column; /* Switch to column layout on small screens */
+            }
+        
+            .flex-item {
+                flex: 1;
+                border-right: none; /* Remove border on small screens */
+            }
+        
+            .right-container {
+                flex: 1; /* Allow the right container to take full width on small screens */
+            }
+            
+            
+            /* Optionally, adjust the styles of the search input and buttons for smaller screens */
+            #searchInput {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        
+            .dropdown-toggle, .btn-custom {
+                width: 100%;
+                text-align: left;
+            }
+            .btn-custom {
+            }
+        }
+
+        /* Adjust the width of the left flex container for larger screens */
+        @media screen and (min-width: 993px) {
+            #godownList {
+                width: 30%; /* Adjust the percentage as needed */
+            }
+        }
+        #searchInput {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        /* Adjust the styles for the buttons in the left flex container */
+        .col-md-4 {
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn-custom {
+            background: none !important;
+            color: orange !important;
+            border: 1px solid orange !important;
+            padding:7px;
         }
         
         /* Hover effect */
         .btn-custom:hover {
             background: orange !important;
-            color: white!important;
+            color: white !important;
         }
+        
     </style>
 </head>
 <body>
@@ -124,15 +200,15 @@
             <div class="container">
                 <div class="row">
                     <!-- Search input and button -->
-                    <div class="col-md-6 mb-2 mb-md-0">
+                    <div class="col-md-5 mb-1 mb-md-1">
                         <div class="d-flex">
-                            <input type="text" id="searchInput" placeholder="Search Here..." class="mr-2 d-inline form-control" style="width: 150px;">
-                            <button onclick="searchTable()" class="btn btn-custom ml-md-2" style="padding-right: 5px;"><i class="fas fa-search"></i></button>
+                            <input type="text" id="searchInput" placeholder="Search Here..." class="mr-0 d-inline form-control" style="width:100px;">
+                            <button onclick="searchTable()" class="btn btn-custom ml-md-1"style="padding-bottom:0;padding-top:0;"><i class="fas fa-search"></i></button>
                         </div>
                     </div>
             
                     <!-- Sort dropdown -->
-                    <div class="col-md-2 mb-2 mb-md-0">
+                    <div class="col-md-3 mb-2 mb-md-0">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Sort <i class="fas fa-sort"></i></button>
@@ -160,8 +236,8 @@
                     </div>
             
                     <!-- New button -->
-                    <div class="col-md-2 ml-md-auto">
-                        <a href="{% url 'add_godown' %}" class="btn btn-custom" style="margin-left: 15px;">
+                    <div class="col-md-2 mb-2 mb-md-0">
+                        <a href="{% url 'add_godown' %}" class="btn btn-custom" >
                             <i class="fas fa-plus"></i>
                         </a>
                     </div>
@@ -170,8 +246,8 @@
             <table class="godown-table">
                 <thead>
                     <tr>
-                        <th>Godown Name</th>
-                        <th>Stock In Hand</th>
+                        <th id="godownNameHeader" onclick="sortTable('godownName')">Godown Name</th>
+                        <th id="stockInHandHeader" onclick="sortTable('stockInHand')">Stock In Hand</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -188,6 +264,10 @@
 
         <!-- Right Vertical Container - Godown Details -->
         <div class="flex-item col-md-5 right-container" id="godownDetails">
+            
+            <a class="btn btn-custom edit-button" href="{% url 'edit_page' %}" >
+                <i class="fas fa-edit"></i> Edit
+            </a>
             <div class="godown-details" style="margin-top: 100px;background:white;color:black;">
                 <div class="godown-card " id="selectedGodownDetails">
                     <h3 align="center" style="color:black; font-size: 20px; margin-bottom: 15px;">Godown Details</h3>
@@ -239,14 +319,63 @@
                 if (td) {
                     txtValue = td.textContent || td.innerText;
         
-                    // Convert both filter and text content to uppercase for case-insensitive search
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    // Convert both filter and text content to strings for case-insensitive search
+                    var filterString = String(filter);
+                    var txtValueString = String(txtValue);
+        
+                    // Use the includes method for a simple substring search
+                    if (txtValueString.toUpperCase().includes(filterString)) {
                         tr[i].style.display = "";
                     } else {
                         tr[i].style.display = "none";
                     }
                 }
             }
+        }
+        
+        function sortTable(column) {
+            var table, rows, switching, i, shouldSwitch;
+            table = document.querySelector(".godown-table");
+            switching = true;
+        
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+        
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    var x = getCellValue(rows[i].getElementsByTagName("td")[column]);
+                    var y = getCellValue(rows[i + 1].getElementsByTagName("td")[column]);
+        
+                    console.log(`Comparing ${x} with ${y}`); // Add this line for debugging
+        
+                    if (isNaN(x) || isNaN(y)) {
+                        // If at least one of the values is not a number, do a string comparison
+                        if (x.toLowerCase() > y.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else {
+                        // Both values are numbers, do a numeric comparison
+                        if (parseFloat(x) > parseFloat(y)) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+        
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+        
+        function getCellValue(cell) {
+            if (cell.dataset.sortValue !== undefined) {
+                return cell.dataset.sortValue;
+            }
+            return cell.innerText || cell.textContent;
         }
     </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
