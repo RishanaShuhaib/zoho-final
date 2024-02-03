@@ -441,27 +441,45 @@ def add_godown(request):
             return redirect('/')
 
     return render(request, 'company/addgodown.html', {'items': items, 'units': units})
-def delete_godown(request, godown_id):
-    if 'login_id' in request.session:
-        login_id = request.session['login_id']
-        try:
-            # Get login details based on the logged-in user's login ID
-            login_details = LoginDetails.objects.get(id=login_id)
+def edit_godown(request):
+    if request.method == 'GET':
+        godown_id = request.GET.get('godown_id')
+        print(godown_id)
+        godown = get_object_or_404(Godown, id=godown_id)
+        items = Items.objects.all()
 
-            # Get company details associated with the login details
-            company_details = CompanyDetails.objects.get(login_details=login_details)
+        return redirect('edit_godown')
 
-            # Get the godown to delete
-            godown = get_object_or_404(company=company_details)
+    elif request.method == 'POST':
+        godown_id = request.POST.get('editedGodownID')
+        godown = get_object_or_404(Godown, id=godown_id)
 
-            # Delete the godown
-            godown.delete()
+        # Update godown fields
+        godown.item_id = request.POST.get('editedGodownItem')
+        godown.date = request.POST.get('editedGodownDate')
+        godown.HSN = request.POST.get('editedGodownHSN')
+        godown.stock_in_hand = request.POST.get('editedGodownStock')
+        godown.godown_name = request.POST.get('editedGodownName')
+        godown.godown_address = request.POST.get('editedGodownAddress')
+        godown.stock_keeping = request.POST.get('editedGodownStockKeeping')
+        godown.distance = request.POST.get('editedGodownDistance')
 
-            return redirect('show_godown_details')  # Redirect to the godown details page after deletion
-        except (LoginDetails.DoesNotExist, CompanyDetails.DoesNotExist):
-            return HttpResponse("Login details or company details not found.")
-    else:
-        return redirect('/')
+        godown.save()
+
+        return redirect(request,'company/edit_godown.html')
+def delete_godown(request):
+    if request.method == 'GET':
+        godown_id = request.GET.get('godown_id')
+        godown = get_object_or_404(Godown, id=godown_id)
+
+        return render(request, 'delete_godown.html', {'godown': godown})
+
+    elif request.method == 'POST':
+        godown_id = request.POST.get('editedGodownID')
+        godown = get_object_or_404(Godown, id=godown_id)
+        godown.delete()
+
+        return redirect('show_godown_details') 
 def save_item(request):
     # Get all units available in the system
     units = Unit.objects.all()
@@ -584,32 +602,7 @@ def godown_overview(request, godown_id=None):
         selected_godown = godowns.first()
 
     return render(request, 'company/godown_overview.html', {'godowns': godowns, 'selected_godown': selected_godown})
-def edit_page(request):
-    item=Items.objects.all()
-    return render(request,'company/edit_godown.html',{'item':item})
-def edit_godown(request, godown_id):
-    godown = get_object_or_404(Godown, id=godown_id)
-    items = Items.objects.all()
 
-    if request.method == 'POST':
-        godown.item = get_object_or_404(Items, id=request.POST.get('editedGodownItem'))
-        godown.date = request.POST.get('editedGodownDate')
-        godown.HSN = request.POST.get('editedGodownHSN')
-        godown.stock_in_hand = request.POST.get('editedGodownStock')
-        godown.godown_name = request.POST.get('editedGodownName')
-        godown.godown_address = request.POST.get('editedGodownAddress')
-        godown.stock_keeping = request.POST.get('editedGodownStockKeeping')
-        godown.distance = request.POST.get('editedGodownDistance')
-
-        # Assuming LoginDetails and CompanyDetails models are defined
-        godown.login_details = get_object_or_404(LoginDetails, id=request.POST.get('editedGodownLoginDetails'))
-        godown.company = get_object_or_404(CompanyDetails, id=request.POST.get('editedGodownCompany'))
-
-        godown.save()
-
-        return HttpResponse("Godown details edited successfully!")
-
-    return render(request, 'company/edit_godown.html', {'godown': godown, 'items': items})
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']

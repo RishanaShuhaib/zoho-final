@@ -1,27 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load static %}
+
 <style>
-    body,h2{
-        color:white;
+    body, h2 {
+        color: white;
     }
 </style>
-<!-- Your existing head and style section -->
 
 <body>
     <div class="body-wrapper">
         <div class="container-fluid">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb" style="color: orange !important;">
-                    <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'show_godown_details' %}" class="text-warning-emphasis">All Godowns </a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'godown_overview' %}" class="text-warning-emphasis">Godown Overview</a></li>
-                    <li class="breadcrumb-item" aria-current="page">Edit Godown Details</li>
+                    <!-- Your existing breadcrumb code -->
                 </ol>
             </nav>
             <h2 align="center">Edit Godown Details</h2>
-            <form id="editGodownForm" method="post">
+            <form id="editGodownForm" method="post" action="{% url 'edit_godown' %}">
                 {% csrf_token %}
+                <input type="hidden" name="editedGodownID" value="{{ godown.id }}">
 
                 <!-- Item selection -->
                 <div class="form-group">

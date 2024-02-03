@@ -3,7 +3,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Page Title</title>
@@ -253,21 +253,27 @@
                 <tbody>
                     <!-- Example Godown Items (Replace with dynamic data from Django) -->
                     {% for godown in godowns %}
-                        <tr class="godown-item" onclick="updateGodownDetails('{{ godown.godown_name }}', '{{ godown.item.item_name }}', '{{ godown.date }}', '{{ godown.HSN }}', '{{ godown.stock_in_hand }}','{{ godown.godown_address }}','{{ godown.stock_keeping }}','{{ godown.distance }}')">
-                            <td>{{ godown.godown_name }}</td>
-                            <td>{{ godown.stock_in_hand }}</td>
-                        </tr>
-                    {% endfor %}
+                    <tr class="godown-item" onclick="updateGodownDetails('{{ godown.godown_id }}','{{ godown.godown_name }}', '{{ godown.item.item_name }}', '{{ godown.date }}', '{{ godown.HSN }}', '{{ godown.stock_in_hand }}','{{ godown.godown_address }}','{{ godown.stock_keeping }}','{{ godown.distance }}')">
+                        <td>{{ godown.godown_name }}</td>
+                        <td>{{ godown.stock_in_hand }}</td>
+                    </tr>
+                {% endfor %}
+                    
                 </tbody>
             </table>
         </div>
 
         <!-- Right Vertical Container - Godown Details -->
         <div class="flex-item col-md-5 right-container" id="godownDetails">
-            
-            <a class="btn btn-custom edit-button" href="{% url 'edit_page' %}" >
-                <i class="fas fa-edit"></i> Edit
-            </a>
+            <a class="btn btn-custom edit-button" href="{% url 'edit_godown' %}?godown_id=">
+    <i class="fas fa-edit"></i>
+</a>
+        <button class="btn btn-custom print-button" onclick="printGodownDetails()">
+            <i class="fas fa-print"></i> 
+        </button>
+        <a class="btn btn-custom btn-sm" href="#"><i class="fas fa-trash"></i> </a>
+        
+        
             <div class="godown-details" style="margin-top: 100px;background:white;color:black;">
                 <div class="godown-card " id="selectedGodownDetails">
                     <h3 align="center" style="color:black; font-size: 20px; margin-bottom: 15px;">Godown Details</h3>
@@ -287,7 +293,7 @@
 </div>
 </div>
     <script>
-        function updateGodownDetails(godownName, itemName, date, HSN, stock, address, stockkeeping, distance) {
+        function updateGodownDetails(godownID, godownName, itemName, date, HSN, stock, address, stockkeeping, distance) {
             // Update details in the right container
             document.getElementById('godownName').innerText = godownName;
             document.getElementById('itemName').innerText = itemName;
@@ -297,14 +303,22 @@
             document.getElementById('godownAddress').innerText = address;
             document.getElementById('godownStockKeeping').innerText = stockkeeping;
             document.getElementById('godownDistance').innerText = distance;
-            // Add more details update as needed
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            var dropdowns = document.querySelectorAll('.dropdown-toggle');
-            dropdowns.forEach(function (dropdown) {
-                new bootstrap.Dropdown(dropdown);
-            });
-        });
+        
+            // Redirect to the edit page with the godown ID as a query parameter
+            window.location.href = "#";
+}
+
+function printGodownDetails() {
+    var printContents = document.getElementById("selectedGodownDetails").innerHTML;
+    var originalContents = document.body.innerHTML;
+
+    document.body.innerHTML = printContents;
+
+    window.print();
+
+    document.body.innerHTML = originalContents;
+}
+
         function searchTable() {
             var input, filter, table, tr, td, i, txtValue;
             input = document.getElementById("searchInput");
@@ -377,10 +391,12 @@
             }
             return cell.innerText || cell.textContent;
         }
+        
+        
     </script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.js"></script>
 
 </body>
 </html>
