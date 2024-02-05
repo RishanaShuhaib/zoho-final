@@ -11,12 +11,22 @@
 <body>
     <div class="body-wrapper">
         <div class="container-fluid">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb" style="color: orange !important;">
-                    <!-- Your existing breadcrumb code -->
-                </ol>
-            </nav>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb" style=" color: orange !important;">
+                <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'show_godown_details' %}" class="text-warning-emphasis">All Godowns </a></li>
+                <li class="breadcrumb-item"><a href="{% url 'godown_overview' godown.id %}" class="text-warning-emphasis">Godown Overview</a></li>
+                <li class="breadcrumb-item" aria-current="page">Edit Godown Details</li>
+            </ol>
+        </nav>
             <h2 align="center">Edit Godown Details</h2>
+            {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
             <form id="editGodownForm" method="post" action="{% url 'edit_godown' %}">
                 {% csrf_token %}
                 <input type="hidden" name="editedGodownID" value="{{ godown.id }}">
@@ -34,7 +44,7 @@
                 <!-- Date input -->
                 <div class="form-group">
                     <label for="editedGodownDate">Date:</label>
-                    <input type="date" id="editedGodownDate" name="editedGodownDate" value="{{ godown.date }}" class="form-control" required>
+                    <input type="date" id="editedGodownDate" name="editedGodownDate" value="{{ godown.date|date:'Y-m-d'  }}" class="form-control" required>
                 </div>
 
                 <!-- HSN input -->
@@ -74,8 +84,11 @@
                 </div>
 
                 <!-- Save Changes button -->
-                <button type="submit" class="btn btn-custom"><i class="fas fa-save"></i> Save Changes</button>
-            </form>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save 
+                    </button>
+                </div>
         </div>
     </div>
 

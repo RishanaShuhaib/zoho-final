@@ -253,11 +253,12 @@
                 <tbody>
                     <!-- Example Godown Items (Replace with dynamic data from Django) -->
                     {% for godown in godowns %}
-                    <tr class="godown-item" onclick="updateGodownDetails('{{ godown.godown_id }}','{{ godown.godown_name }}', '{{ godown.item.item_name }}', '{{ godown.date }}', '{{ godown.HSN }}', '{{ godown.stock_in_hand }}','{{ godown.godown_address }}','{{ godown.stock_keeping }}','{{ godown.distance }}')">
+                    <tr class="godown-item" id="godownRow{{ godown.id }}" onclick="selectGodown('{{ godown.id }}')">
+                    
                         <td>{{ godown.godown_name }}</td>
                         <td>{{ godown.stock_in_hand }}</td>
                     </tr>
-                {% endfor %}
+{% endfor %}
                     
                 </tbody>
             </table>
@@ -265,49 +266,99 @@
 
         <!-- Right Vertical Container - Godown Details -->
         <div class="flex-item col-md-5 right-container" id="godownDetails">
-            <a class="btn btn-custom edit-button" href="{% url 'edit_godown' %}?godown_id=">
+            <a class="btn btn-custom edit-button" onclick="editGodown('{{ godown.id }}')">
     <i class="fas fa-edit"></i>
 </a>
         <button class="btn btn-custom print-button" onclick="printGodownDetails()">
             <i class="fas fa-print"></i> 
         </button>
-        <a class="btn btn-custom btn-sm" href="#"><i class="fas fa-trash"></i> </a>
-        
-        
-            <div class="godown-details" style="margin-top: 100px;background:white;color:black;">
-                <div class="godown-card " id="selectedGodownDetails">
-                    <h3 align="center" style="color:black; font-size: 20px; margin-bottom: 15px;">Godown Details</h3>
-                    <p><strong>Godown Name:</strong> </strong><span id="godownName"></span></p>
-                    <p><strong>Item Name:</strong> <span id="itemName"></span></p>
-                    <p><strong>Date:</strong> <span id="godownDate"></span></p>
-                    <p><strong>HSN: </strong><span id="godownHSN"></span></p>
-                    <p><strong>Stock In Hand:</strong><span id="godownStock"></span></p>
-                    <p><strong>Godown Address:</strong><span id="godownAddress"></span></p>
-                    <p><strong>Stock Keeping: </strong><span id="godownStockKeeping"></span></p>
-                    <p><strong>Distance: </strong><span id="godownDistance"></span></p>
-                    <!-- Add more details as needed -->
+        <a class="btn btn-custom edit-button" onclick="deleteGodown('{{ godown.id }}')">
+            <i class="fas fa-trash"></i>
+        </a>
+        <div class="col-md-2 mb-1 mb-md-0">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-comment"></i></button>
+                    <div class="dropdown-menu" style="color:white;">
+                        <a class="dropdown-item"  data-toggle="modal" data-target="#addCommentModal">Add Comment</a>
+                        <a class="dropdown-item" data-toggle="modal" data-target="#viewCommentsModal{{ godown.id }}" href="{% url 'comment_details' godown_id=godown.id %}">View Comments</a>
+
+                    </div>
                 </div>
             </div>
+        </div>
+        <div class="modal fade" id="addCommentModal" tabindex="-1" role="dialog" aria-labelledby="addCommentModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCommentModalLabel">Add Comment</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Add your comment form or input fields here -->
+                        <form method="post" action="{% url 'add_comment' godown_id=godown.id %}">
+                            {% csrf_token %}
+                            <!-- Input field for comment text -->
+                            <div class="form-group">
+                                <label for="comment">Comment:</label>
+                                <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                            </div>
+                            
+                            <!-- Hidden field for godown_id -->
+                            <input type="hidden" name="godown_id" value="{{ godown.id }}">
+                            
+                            <!-- Submit button -->
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="viewCommentsModal{{ godown.id }}" tabindex="-1" role="dialog" aria-labelledby="viewCommentsModalLabel" aria-hidden="true" style="color: black;">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewCommentsModalLabel">View Comments</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        {% if comments %}
+                            <ul>
+                                {% for comment in comments %}
+                                    <li>{{ comment.comment_text }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p> </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="godown-details" style="margin-top: 100px; background: white; color: black;">
+            <div class="godown-card" id="selectedGodownDetails">
+                <h3 align="center" style="color: black; font-size: 20px; margin-bottom: 15px;">Godown Details</h3>
+                <p><strong>Godown Name:</strong> <span id="godownName">{{ godown.godown_name }}</span></p>
+                <p><strong>Item Name:</strong> <span id="itemName">{{ godown.item.item_name }}</span></p>
+                <p><strong>Date:</strong> <span id="godownDate">{{ godown.date }}</span></p>
+                <p><strong>HSN:</strong> <span id="godownHSN">{{ godown.HSN }}</span></p>
+                <p><strong>Stock In Hand:</strong><span id="godownStock">{{ godown.stock_keeping }}</span></p>
+                <p><strong>Godown Address:</strong><span id="godownAddress">{{ godown.godown_address }}</span></p>
+                <p><strong>Stock Keeping:</strong> <span id="godownStockKeeping">{{ godown.stock_keeping }}</span></p>
+                <p><strong>Distance:</strong> <span id="godownDistance">{{ godown.distance }}</span></p>
+                <!-- Add more details as needed -->
+            </div>
+        </div>
         </div>
     </div>
 </div>
 </div>
     <script>
-        function updateGodownDetails(godownID, godownName, itemName, date, HSN, stock, address, stockkeeping, distance) {
-            // Update details in the right container
-            document.getElementById('godownName').innerText = godownName;
-            document.getElementById('itemName').innerText = itemName;
-            document.getElementById('godownDate').innerText = date;
-            document.getElementById('godownHSN').innerText = HSN;
-            document.getElementById('godownStock').innerText = stock;
-            document.getElementById('godownAddress').innerText = address;
-            document.getElementById('godownStockKeeping').innerText = stockkeeping;
-            document.getElementById('godownDistance').innerText = distance;
         
-            // Redirect to the edit page with the godown ID as a query parameter
-            window.location.href = "#";
-}
-
 function printGodownDetails() {
     var printContents = document.getElementById("selectedGodownDetails").innerHTML;
     var originalContents = document.body.innerHTML;
@@ -391,8 +442,22 @@ function printGodownDetails() {
             }
             return cell.innerText || cell.textContent;
         }
-        
-        
+        function selectGodown(godownId) {
+            var newUrl = "{% url 'godown_overview' 0 %}".replace('0', godownId);
+            window.location.href = newUrl;
+        }
+        function editGodown(godownId) {
+        var editPageUrl = "{% url 'edit_page' 0 %}".replace('0', godownId);
+
+        // Redirect to the edit page URL
+        window.location.href = editPageUrl;
+        }
+        function deleteGodown(godownId) {
+            if (confirm("Are you sure you want to delete this godown?")) {
+                var deleteUrl = "{% url 'delete_godown' 0 %}".replace('0', godownId);
+                window.location.href = deleteUrl;
+            }
+        }
     </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>

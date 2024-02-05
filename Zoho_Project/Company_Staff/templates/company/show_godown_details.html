@@ -99,9 +99,10 @@
         </thead>
         <tbody>
           {% for godown in godowns %}
-          <tr class="border-bottom border-dark" onclick="redirectToOverview('{{ godown.id }}')" style="cursor: pointer;">
+          <tr class="godown-item" >
+           
             <td>{{ godown.date }}</td>
-            <td>{{ godown.godown_name }}</td>
+            <td data-godown-id="{{ godown.id }}" onclick="window.location.href='{% url 'godown_overview' godown_id=godown.id %}'" style="cursor: pointer;">{{ godown.godown_name }}</td>
             <td>
               {% if godown.item %}
               {{ godown.item.item_name }}
@@ -115,9 +116,9 @@
 
             </td>
             <td>
-              <a href="#" style="color: white;">
-                <i class="fas fa-trash"></i>
-              </a>
+              <a href="{% url 'delete_godown' godown.id %}" style="color: white;"> <!-- Include Godown ID -->
+    <i class="fas fa-trash"></i>
+</a>
             </td>
           </tr>
           {% endfor %}
@@ -316,14 +317,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-<script>
-  function redirectToOverview(godownId) {
-    // Assuming godownId is passed as an argument
-    var url = "{% url 'godown_overview' 0 %}".replace('0', godownId);
-    // Redirect to the constructed URL
-    window.location.href = url;
-  }
-</script>
-
 
 {% endblock %}

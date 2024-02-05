@@ -24,10 +24,11 @@ urlpatterns = [
     path('Company/Show-Holidays/', views.show_holidays, name='show_holidays'),
     path('Company/Add-Holiday/', views.add_holiday, name='add_holiday'),
     path('Company/Godown-Overview/<int:godown_id>/', views.godown_overview, name='godown_overview'),
-    path('Company/Godown-Overview/', views.godown_overview, name='godown_overview'),
     path('Company/Edit_Godown/', views.edit_godown, name='edit_godown'),
-    path('Company/Delete_Godown/', views.delete_godown, name='delete_godown'),
-    
+    path('Company/Edit_Page/<int:godown_id>/', views.edit_page, name='edit_page'),
+    path('Company/Delete_Godown/<int:godown_id>/', views.delete_godown, name='delete_godown'),
+    path('Company/Add_Comment/<int:godown_id>/', views.add_comment, name='add_comment'),
+    path('Company/Comment_Details/<int:godown_id>/', views.comment_details, name='comment_details'),
 
 
 

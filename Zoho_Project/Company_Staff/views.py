@@ -383,13 +383,33 @@ def show_godown_details(request):
         log_id = request.session['login_id']
         try:
             log_details = LoginDetails.objects.get(id=log_id)
-            company_details = log_details.companydetails_set.first()  # Assuming you have a related_name in LoginDetails model
-            godowns = Godown.objects.filter(item__unit__company=company_details)
-            return render(request, 'company/show_godown_details.html', {'godowns': godowns})
+            company_details = log_details.companydetails_set.first()
+            
+            if request.method == 'POST':
+                godown_id = request.POST.get('godown_id')
+                try:
+                    godown = Godown.objects.get(id=godown_id, item__unit__company=company_details)
+                    return render(request, 'company/show_godown_details.html', {'godown': godown})
+                except Godown.DoesNotExist:
+                    return HttpResponseNotFound("Godown not found")
+            
+            else:
+                godowns = Godown.objects.filter(item__unit__company=company_details)
+                return render(request, 'company/show_godown_details.html', {'godowns': godowns})
+        
         except (LoginDetails.DoesNotExist, CompanyDetails.DoesNotExist):
             return HttpResponse("Login details or company details not found.")
     else:
         return redirect('/')
+def godown_overview(request, godown_id):
+    godowns = Godown.objects.all()
+
+    try:
+        godown = Godown.objects.get(id=godown_id)
+        return render(request, 'company/godown_overview.html', {'godowns': godowns, 'godown': godown})
+    except Godown.DoesNotExist:
+        return HttpResponseNotFound("Godown not found")
+
 def add_godown(request):
     units = Unit.objects.all()
     items = Items.objects.all()  # Define units and items outside the if block
@@ -441,16 +461,14 @@ def add_godown(request):
             return redirect('/')
 
     return render(request, 'company/addgodown.html', {'items': items, 'units': units})
+def edit_page(request, godown_id):
+    godown = get_object_or_404(Godown, id=godown_id)
+    items = Items.objects.all()
+
+    return render(request, 'company/edit_godown.html', {'godown': godown, 'items': items})
+
 def edit_godown(request):
-    if request.method == 'GET':
-        godown_id = request.GET.get('godown_id')
-        print(godown_id)
-        godown = get_object_or_404(Godown, id=godown_id)
-        items = Items.objects.all()
-
-        return redirect('edit_godown')
-
-    elif request.method == 'POST':
+    if request.method == 'POST':
         godown_id = request.POST.get('editedGodownID')
         godown = get_object_or_404(Godown, id=godown_id)
 
@@ -465,21 +483,23 @@ def edit_godown(request):
         godown.distance = request.POST.get('editedGodownDistance')
 
         godown.save()
+        messages.success(request, 'Godown details updated successfully.')
+        return redirect('edit_page', godown_id=godown_id)
+    else:
+        # Handle cases where the request method is not POST (optional)
+        return redirect('some_error_page') 
+def delete_godown(request, godown_id):
+    godown = get_object_or_404(Godown, id=godown_id)
+    godown.delete()
 
-        return redirect(request,'company/edit_godown.html')
-def delete_godown(request):
-    if request.method == 'GET':
-        godown_id = request.GET.get('godown_id')
-        godown = get_object_or_404(Godown, id=godown_id)
+    # Retrieve the updated list of godowns
+    updated_godowns = Godown.objects.all()  # You may need to filter based on your requirements
 
-        return render(request, 'delete_godown.html', {'godown': godown})
+    # Pass the updated godown list to the template
+    context = {'godowns': updated_godowns}
 
-    elif request.method == 'POST':
-        godown_id = request.POST.get('editedGodownID')
-        godown = get_object_or_404(Godown, id=godown_id)
-        godown.delete()
-
-        return redirect('show_godown_details') 
+    # Render the template with the updated godown list
+    return render(request, 'company/show_godown_details.html', context)
 def save_item(request):
     # Get all units available in the system
     units = Unit.objects.all()
@@ -587,22 +607,25 @@ def add_unit(request):
             return HttpResponse('User not logged in.')  # Provide a meaningful response or redirect
 
     return render(request, 'company/addgodown.html')
+def add_comment(request, godown_id):
+    if request.method == 'POST':
+        comment_text = request.POST.get('comment', '')
 
-def godown_overview(request, godown_id=None):
-    godowns = Godown.objects.all()
+        godown = get_object_or_404(Godown, pk=godown_id)
 
-    if godown_id:
-        try:
-            selected_godown = Godown.objects.get(id=godown_id)
-        except Godown.DoesNotExist:
-            # Handle the case when the specified godown does not exist
-            return HttpResponseNotFound("Godown not found")
-    else:
-        # Default to the first godown if no specific one is selected
-        selected_godown = godowns.first()
+        Comment.objects.create(
+                comment_text=comment_text,
+                godown=godown
+            )
 
-    return render(request, 'company/godown_overview.html', {'godowns': godowns, 'selected_godown': selected_godown})
+        return redirect('godown_overview', godown_id=godown_id)
 
+    # If the user is not logged in or the request method is not POST
+    return redirect('godown_overview', godown_id=godown_id)
+def comment_details(request, godown_id):
+    godown = get_object_or_404(Godown, pk=godown_id)
+    comments = Comment.objects.filter(godown=godown)
+    return render(request, 'company/godown_comments.html', {'godown': godown, 'comments': comments})
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
