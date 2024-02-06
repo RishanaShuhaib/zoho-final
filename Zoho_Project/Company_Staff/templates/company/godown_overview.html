@@ -4,6 +4,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head><script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Page Title</title>
@@ -280,8 +281,9 @@
                 <div class="input-group-prepend">
                     <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-comment"></i></button>
                     <div class="dropdown-menu" style="color:white;">
-                        <a class="dropdown-item"  data-toggle="modal" data-target="#addCommentModal">Add Comment</a>
-                        <a class="dropdown-item" data-toggle="modal" data-target="#viewCommentsModal{{ godown.id }}" href="{% url 'comment_details' godown_id=godown.id %}">View Comments</a>
+                        <a class="dropdown-item"  data-toggle="modal" data-target="#addCommentModal"><i class="fas fa-comment"></i>Add Comment</a>
+                        <a class="dropdown-item" onclick="viewComments('{{ godown.id }}')"><i class="fas fa-comments"></i>View Comments</a>
+
 
                     </div>
                 </div>
@@ -316,29 +318,45 @@
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="viewCommentsModal{{ godown.id }}" tabindex="-1" role="dialog" aria-labelledby="viewCommentsModalLabel" aria-hidden="true" style="color: black;">
+        <div style="color:black;"class="modal fade" id="viewCommentsModal" tabindex="-1" role="dialog" aria-labelledby="viewCommentsModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="viewCommentsModalLabel">View Comments</h5>
+                        <h5 class="modal-title" id="viewCommentsModalLabel"> Comments</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        {% if comments %}
-                            <ul>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Comment Text</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                                 {% for comment in comments %}
-                                    <li>{{ comment.comment_text }}</li>
+                                <tr>
+                                    <td>{{ comment.comment_text }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning edit-comment-button" onclick="editComment('{{ comment.id }}')">Edit</button>
+                                        <button class="btn btn-sm btn-danger" >Delete</button>
+                                    </td>
+                                </tr>
                                 {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p> </p>
-                        {% endif %}
+                            </tbody>
+                            
+                        </table>
+                        <form class="edit-comment-form" style="display: none;">
+                            <textarea class="form-control" rows="3">{{ comment.comment_text }}</textarea>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
+        
         <div class="godown-details" style="margin-top: 100px; background: white; color: black;">
             <div class="godown-card" id="selectedGodownDetails">
                 <h3 align="center" style="color: black; font-size: 20px; margin-bottom: 15px;">Godown Details</h3>
@@ -358,7 +376,55 @@
 </div>
 </div>
     <script>
-        
+        function viewComments(godownId) {
+            // Use AJAX to fetch comments for the specific godown
+            $.ajax({
+                url: "{% url 'show_comments' 0 %}".replace('0', godownId),
+                success: function(response) {
+                    // Render the fetched comments in the modal body
+                    $('#viewCommentsModal .modal-body').html(response);
+                    // Display the modal
+                    $('#viewCommentsModal').modal('show');
+                }
+            });
+        }
+        function viewComments(godownId) {
+            // Use AJAX to fetch comments for the specific godown
+            $.ajax({
+                url: "{% url 'show_comments' 0 %}".replace('0', godownId),
+                success: function(response) {
+                    // Render the fetched comments in the modal body
+                    $('#viewCommentsModal .modal-body').html(response);
+                    // Display the modal
+                    $('#viewCommentsModal').modal('show');
+                }
+            });
+        }
+        function editComment(commentId) {
+            // Hide all other edit comment forms if any
+            document.querySelectorAll('.edit-comment-form').forEach(function(form) {
+                form.style.display = 'none';
+            });
+    
+            // Show the edit comment form for the specific comment
+            var editForm = document.querySelector('.edit-comment-form[data-comment-id="' + commentId + '"]');
+            editForm.style.display = 'block';
+    
+            // Handle submission of the edit comment form
+            editForm.onsubmit = function(event) {
+                event.preventDefault(); // Prevent the default form submission
+    
+                // Get the edited comment text
+                var editedCommentText = editForm.querySelector('textarea').value;
+    
+                // Perform the update operation (e.g., send an AJAX request to the server)
+                // For demonstration purposes, let's just log the edited comment text
+                console.log('Edited comment text:', editedCommentText);
+    
+                // Hide the edit comment form after submission
+                editForm.style.display = 'none';
+            };
+        }
 function printGodownDetails() {
     var printContents = document.getElementById("selectedGodownDetails").innerHTML;
     var originalContents = document.body.innerHTML;

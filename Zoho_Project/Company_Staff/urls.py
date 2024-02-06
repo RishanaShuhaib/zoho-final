@@ -28,7 +28,9 @@ urlpatterns = [
     path('Company/Edit_Page/<int:godown_id>/', views.edit_page, name='edit_page'),
     path('Company/Delete_Godown/<int:godown_id>/', views.delete_godown, name='delete_godown'),
     path('Company/Add_Comment/<int:godown_id>/', views.add_comment, name='add_comment'),
-    path('Company/Comment_Details/<int:godown_id>/', views.comment_details, name='comment_details'),
+    path('Company/Show_Comments/<int:godown_id>/', views.show_comments, name='show_comments'),
+    path('Company/Edit_Comment/', views.edit_comment, name='edit_comment'),
+    #path('Company/Delete_Comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
 
 
 

@@ -4,6 +4,9 @@ from Company_Staff.models import *
 from Register_Login.views import logout
 from django.contrib import messages
 from django.conf import settings
+import json
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 from datetime import date
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpResponseBadRequest,HttpResponseNotFound
@@ -620,12 +623,39 @@ def add_comment(request, godown_id):
 
         return redirect('godown_overview', godown_id=godown_id)
 
-    # If the user is not logged in or the request method is not POST
     return redirect('godown_overview', godown_id=godown_id)
-def comment_details(request, godown_id):
-    godown = get_object_or_404(Godown, pk=godown_id)
-    comments = Comment.objects.filter(godown=godown)
-    return render(request, 'company/godown_comments.html', {'godown': godown, 'comments': comments})
+def show_comments(request, godown_id):
+    # Fetch comments related to the specified godown_id
+    comments = Comment.objects.filter(godown_id=godown_id)
+
+    # Render the template with the comments
+    return render(request, 'company/show_comments.html', {'comments': comments})
+def edit_comment(request):
+    if request.method == 'POST':
+        comment_id = request.POST.get('commentId')
+        comment_text = request.POST.get('editTextArea')
+        
+        # Retrieve the comment object
+        comment = get_object_or_404(Comment, pk=comment_id)
+
+        # Update the comment text with the new value
+        comment.comment_text = comment_text
+        comment.save()
+
+        # Redirect to the 'godown_overview' view with the default godown_id
+        return redirect('godown_overview')
+
+    # If the request method is not POST, redirect to the 'failed' view
+    return redirect('godown_overview')
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+
+    if request.method == 'POST':
+        comment.delete()
+
+        return JsonResponse({'success': True})
+
+    return render(request, 'company/godown_overview.html', {'comment': comment})
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
