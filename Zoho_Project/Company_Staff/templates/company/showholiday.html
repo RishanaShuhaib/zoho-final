@@ -1,7 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load static %}
-
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Page Title</title>
 <style>
   body {
     background: black !important;
@@ -11,6 +17,7 @@
     background: none !important;
     color: orange !important;
     border: 1px solid orange !important;
+    width:80px;
   }
 
   /* Hover effect */
@@ -18,8 +25,10 @@
     background: orange !important;
     color: white !important;
   }
+  
 </style>
-
+</head>
+<body>
 <div class="body-wrapper">
   <div class="container-fluid">
     <nav aria-label="breadcrumb">
@@ -31,61 +40,42 @@
     <p class="display-5 text-center" style="color: white;">All Holidays</p>
 
     <div class="container-fluid">
-      <div class="d-flex flex-wrap align-items-center" style="padding: 5px;">
-
-        <div class="d-flex flex-wrap">
-          <input type="text" id="searchInput" placeholder="Search Here..." class="mr-2 d-inline form-control mb-2 mb-md-0" style="width: 150px;">
-          <button onclick="searchTable()" class="btn btn-custom ml-md-2 mb-2 mb-md-0" style="padding-right: 5px;"><i class="fas fa-search"></i></button>
-        </div>
-
-        <div class="ml-md-3">
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-sort"></i></button>
-              <div class="dropdown-menu" style="color:white;">
-                <a class="dropdown-item" href="#">A</a>
-                <a class="dropdown-item" href="#">B</a>
-                <a class="dropdown-item" href="#">C</a>
-              </div>
+      <div class="d-flex align-items-center" >
+    
+        <div class="d-flex align-items-center mr-2">
+          <input type="text" id="searchInput" placeholder="Search Here..." class="mr-2 form-control" style="width: 150px;">
+          <button onclick="searchTable()" class="btn btn-custom ml-2"><i class="fas fa-search"></i></button>
+      </div>
+    
+        <div class="input-group mr-3">
+          <div class="input-group-prepend">
+            <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Sort</button>
+            <div class="dropdown-menu" style="color:white;">
+              <a class="dropdown-item" id="sortAll" href="#">All</a>
+              <a class="dropdown-item" id="sortMonth" href="#">Month</a>
+              <a class="dropdown-item" id="sortYear" href="#">Year</a>
             </div>
           </div>
         </div>
-
-        <div class="ml-md-3">
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <button class="btn btn-custom dropdown-toggle " type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-filter"></i></button>
-              <div class="dropdown-menu" style="color:white;">
-                <a class="dropdown-item" href="#" onclick="applyFilter('A')">A</a>
-                <a class="dropdown-item" href="#" onclick="applyFilter('B')">B</a>
-                <a class="dropdown-item" href="#" onclick="applyFilter('C')">C</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="ml-md-5">
-          <div class="input-group">
-            <a href="#" class="btn btn-custom ml-md-5" onclick="importData()">
-              Import <i class="fas fa-upload"></i>
-            </a>
-          </div>
-        </div>
-
-        <div class="ml-md-1">
-          <div class="input-group">
-            <a href="#" class="btn btn-custom" onclick="exportData()" style="margin-left: 1px;">
-              Export <i class="fas fa-file-export"></i>
-            </a>
-          </div>
-        </div>
-
-        <div class="ml-md-auto">
-          <a href="{% url 'add_holiday' %}" class="btn btn-custom" style="margin-left: 15px;">
-            New <i class="fas fa-plus"></i>
+    
+        <div class="mr-3">
+          <a href="#" class="btn btn-custom" onclick="importData()"style="width:100px;!important;">
+            Import<i class="fas fa-upload"></i>
           </a>
         </div>
-
+    
+        <div class="mr-3">
+          <a href="#" class="btn btn-custom" onclick="exportData()"style="width:100px;!important;">
+             Export<i class="fas fa-file-export"></i>
+          </a>
+        </div>
+    
+        <div>
+          <a href="{% url 'add_holiday' %}" class="btn btn-custom"style="width:100px;!important;">
+             New<i class="fas fa-plus"></i>
+          </a>
+        </div>
+    
       </div>
     </div>
 
@@ -103,10 +93,10 @@
         <tbody>
           {% if holidays %}
             {% for holiday in holidays %}
-              <tr class="border-bottom border-dark">
-                <td>{{ forloop.counter }}</td>
+              <tr class="border-bottom border-dark"  onclick="window.location.href='{% url 'holiday_overview'  %}'" style="cursor: pointer;">
+                <td >{{ forloop.counter }}</td>
                 {% if holiday.start_month == holiday.end_month %}
-                  <td>{{ holiday.start_month|date:"F" }}</td>
+                  <td >{{ holiday.start_month|date:"F" }}</td>
                   <td>{{ holiday.start_month|date:"Y" }}</td>
                 {% else %}
                   <td>{{ holiday.start_month|date:"F" }}  {{ holiday.end_month|date:"F" }}</td>
@@ -127,6 +117,8 @@
   </div>
 </div>
 </div>
+</body>
+
 <script>
   function searchTable() {
     // Declare variables
@@ -224,6 +216,55 @@
     // Save the workbook to an Excel file
     XLSX.writeFile(workbook, "godown_details.xlsx");
   }
+  var currentSortColumn = null; // Variable to store the current sort column
+
+  function sortTable(column) {
+    var table, rows, switching, i, shouldSwitch;
+    table = document.querySelector(".table");
+    switching = true;
+
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+
+      for (i = 1; i < (rows.length - 1); i++) {
+        shouldSwitch = false;
+
+        var x = rows[i].getElementsByTagName("td")[column];
+        var y = rows[i + 1].getElementsByTagName("td")[column];
+
+        // Check if the two rows should switch places
+        if (currentSortColumn === column && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        } else if (currentSortColumn !== column && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+
+    // Update the current sort column
+    currentSortColumn = column;
+  }
+
+  // Attach click event listeners to the dropdown items
+  document.getElementById('sortAll').addEventListener('click', function () {
+    sortTable(0);
+  });
+
+  document.getElementById('sortMonth').addEventListener('click', function () {
+    sortTable(1);
+  });
+
+  document.getElementById('sortYear').addEventListener('click', function () {
+    sortTable(2);
+  });
 </script>
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
@@ -231,5 +272,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-
+</html>
 {% endblock %}

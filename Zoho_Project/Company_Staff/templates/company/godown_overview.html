@@ -9,6 +9,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Page Title</title>
     <style>
+        .btn-custom { /* Set the minimum width to ensure all buttons have the same width */
+            height: auto; /* Allow the height to adjust based on content */
+            text-align: center; /* Center the text horizontally within the button */
+            padding-left:0 !important;
+            padding-right:0 !important;
+            align:center;
+            width:50px;
+            
+        }
+        button{
+            align:center !important;
+            padding-left:auto !important;
+        }
+        .dropdown-toggle {
+            min-width: 100%;
+            height: auto;
+            text-align: center;
+            padding: 10px;
+        }
         .flex-container {
             display: flex;
             height: 100vh;
@@ -107,7 +126,6 @@
             background: none !important;
             color: orange !important;
             border: 1px solid orange !important;
-            padding:1 px;;
         }
     
         /* Hover effect */
@@ -136,17 +154,9 @@
             }
             
             
-            /* Optionally, adjust the styles of the search input and buttons for smaller screens */
-            #searchInput {
-                width: 100%;
-                margin-bottom: 10px;
-            }
         
             .dropdown-toggle, .btn-custom {
-                width: 100%;
                 text-align: left;
-            }
-            .btn-custom {
             }
         }
 
@@ -156,22 +166,17 @@
                 width: 30%; /* Adjust the percentage as needed */
             }
         }
-        #searchInput {
-            width: 100%;
-            margin-bottom: 10px;
-        }
         
         /* Adjust the styles for the buttons in the left flex container */
-        .col-md-4 {
-            display: flex;
-            align-items: center;
-        }
+        
         
         .btn-custom {
             background: none !important;
             color: orange !important;
             border: 1px solid orange !important;
             padding:7px;
+            padding-left:0 !important;
+            padding-right:0;
         }
         
         /* Hover effect */
@@ -195,24 +200,24 @@
     <div class="flex-row">
 
         <!-- Left Vertical Container - Godown List -->
-        <div class="flex-item col-md-2mm " id="godownList">
+        <div class="flex-item col-md-3mm " id="godownList">
             
             <h2 style="color:white;">Godown List</h2>
             <div class="container">
-                <div class="row">
+                <div class="row mr-0  ">
                     <!-- Search input and button -->
-                    <div class="col-md-5 mb-1 mb-md-1">
+                    <div class="col-md-5 mb-1 mb-md-0" >
                         <div class="d-flex">
-                            <input type="text" id="searchInput" placeholder="Search Here..." class="mr-0 d-inline form-control" style="width:100px;">
-                            <button onclick="searchTable()" class="btn btn-custom ml-md-1"style="padding-bottom:0;padding-top:0;"><i class="fas fa-search"></i></button>
+                            <input type="text" class="col-md-2 mb-1 mb-md-0"id="searchInput" style="width:80px;"placeholder="Search Here..." class="mr-2 d-inline form-control">
+                            <button onclick="searchTable()" class="btn btn-custom "><i class="fas fa-search"></i></button>
                         </div>
                     </div>
-            
+                
                     <!-- Sort dropdown -->
-                    <div class="col-md-3 mb-2 mb-md-0">
+                    <div class="col-md-2 mb-3 mb-md-0">
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Sort <i class="fas fa-sort"></i></button>
+                                <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-sort"></i></button>
                                 <div class="dropdown-menu" style="color:white;">
                                     <a class="dropdown-item" id="sortAll" href="#">All</a>
                                     <a class="dropdown-item" id="sortGodownName" href="#">Godown Name</a>
@@ -221,9 +226,9 @@
                             </div>
                         </div>
                     </div>
-            
+                
                     <!-- Filter dropdown -->
-                    <div class="col-md-2 mb-2 mb-md-0">
+                    <div class="col-md-2 mb-1 mb-md-0">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-filter"></i></button>
@@ -235,10 +240,10 @@
                             </div>
                         </div>
                     </div>
-            
+                
                     <!-- New button -->
-                    <div class="col-md-2 mb-2 mb-md-0">
-                        <a href="{% url 'add_godown' %}" class="btn btn-custom" >
+                    <div class="col-md-1 mb-1 mb-md-0">
+                        <a href="{% url 'add_godown' %}" class="btn btn-custom">
                             <i class="fas fa-plus"></i>
                         </a>
                     </div>
@@ -267,28 +272,43 @@
 
         <!-- Right Vertical Container - Godown Details -->
         <div class="flex-item col-md-5 right-container" id="godownDetails">
-            <a class="btn btn-custom edit-button" onclick="editGodown('{{ godown.id }}')">
-    <i class="fas fa-edit"></i>
-</a>
-        <button class="btn btn-custom print-button" onclick="printGodownDetails()">
-            <i class="fas fa-print"></i> 
-        </button>
-        <a class="btn btn-custom edit-button" onclick="deleteGodown('{{ godown.id }}')">
-            <i class="fas fa-trash"></i>
-        </a>
-        <div class="col-md-2 mb-1 mb-md-0">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-comment"></i></button>
-                    <div class="dropdown-menu" style="color:white;">
-                        <a class="dropdown-item"  data-toggle="modal" data-target="#addCommentModal"><i class="fas fa-comment"></i>Add Comment</a>
-                        <a class="dropdown-item" onclick="viewComments('{{ godown.id }}')"><i class="fas fa-comments"></i>View Comments</a>
-
-
+            <div class="row mr-0 mr-2 align-item-left" style=" margin-right: 0 !important; margin-left: 0 !important;">
+                <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
+                    <a class="btn btn-custom edit-button" style="width: 100%;" onclick="editGodown('{{ godown.id }}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                </div>
+                <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
+                    <button class="btn btn-custom print-button" style="width: 100%;" onclick="printGodownDetails()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                </div>
+                <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
+                    <a class="btn btn-custom edit-button" style="width: 100%;" onclick="deleteGodown('{{ godown.id }}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+                <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
+                    <div class="input-group">
+                        <button class="btn btn-custom dropdown-toggle" type="button" style="width: 100%;" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-comment"></i>
+                        </button>
+                        <div class="dropdown-menu" style="color: white;">
+                            <a class="dropdown-item" data-toggle="modal" data-target="#addCommentModal">
+                                <i class="fas fa-comment"></i> Add Comment
+                            </a>
+                            <a class="dropdown-item" onclick="viewComments('{{ godown.id }}')">
+                                <i class="fas fa-comments"></i> View Comments
+                            </a>
+                        </div>
                     </div>
                 </div>
+                <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
+                    <button class="btn btn-custom history-button" style="width: 100%;" onclick="goToHistoryPage()">
+                        <i class="fas fa-history"></i> History
+                    </button>
+                </div>
             </div>
-        </div>
         <div class="modal fade" id="addCommentModal" tabindex="-1" role="dialog" aria-labelledby="addCommentModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -341,7 +361,7 @@
                                     <td>{{ comment.comment_text }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-warning edit-comment-button" onclick="editComment('{{ comment.id }}')">Edit</button>
-                                        <button class="btn btn-sm btn-danger" >Delete</button>
+                                        <button class="btn btn-sm btn-danger"onclick="editComment('{{ comment.id }}')" >Delete</button>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -376,6 +396,10 @@
 </div>
 </div>
     <script>
+        function goToHistoryPage() {
+            // Redirect to the history page URL
+            window.location.href = "{% url 'history_page' %}";
+        }
         function viewComments(godownId) {
             // Use AJAX to fetch comments for the specific godown
             $.ajax({

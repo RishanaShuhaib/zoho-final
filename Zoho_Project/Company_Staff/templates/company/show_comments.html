@@ -20,7 +20,7 @@
                 <td>
                     <!-- Use data attributes to store comment ID -->
                     <button class="btn btn-sm btn-warning edit-comment-button" onclick="showEditForm('{{ comment.id }}')">Edit</button>
-                    <button class="btn btn-sm btn-danger">Delete</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteComment('{{ comment.id }}')">Delete</button>
                 </td>
             </tr>
             {% endfor %}
@@ -44,9 +44,60 @@
             document.getElementById('editForm').style.display = 'block';
         }
         function saveEdit() {
-            var form = document.getElementById('editForm');
-            form.submit();
-            form.style.display = 'none';
+            var commentId = document.getElementById('commentId').value;
+            var newCommentText = document.getElementById('editTextArea').value;
+        
+            // Make an AJAX request to update the comment
+            fetch('/Company/Edit_Comment/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'), // Ensure to include CSRF token
+                },
+                body: JSON.stringify({
+                    commentId: commentId,
+                    editTextArea: newCommentText,
+                }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Update the comment text in the table
+                    var commentCell = document.querySelector('tr[data-comment-id="' + commentId + '"] td:first-child');
+                    commentCell.innerText = newCommentText;
+                    
+                    // Hide the edit form
+                    document.getElementById('editForm').style.display = 'none';
+                } else {
+                    throw new Error('Failed to save comment');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving comment:', error);
+            });
+        }
+        
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        function deleteComment(commentId) {
+            // Construct the URL dynamically with the commentId parameter
+            var deleteUrl = '/Company/Delete-Comment/' + commentId + '/';
+        
+            // Redirect to the delete URL
+            window.location.href = deleteUrl;
         }
     </script>
 </body>

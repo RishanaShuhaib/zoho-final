@@ -634,28 +634,22 @@ def edit_comment(request):
     if request.method == 'POST':
         comment_id = request.POST.get('commentId')
         comment_text = request.POST.get('editTextArea')
-        
-        # Retrieve the comment object
         comment = get_object_or_404(Comment, pk=comment_id)
-
-        # Update the comment text with the new value
         comment.comment_text = comment_text
         comment.save()
-
-        # Redirect to the 'godown_overview' view with the default godown_id
-        return redirect('godown_overview')
-
-    # If the request method is not POST, redirect to the 'failed' view
-    return redirect('godown_overview')
+        return HttpResponse('Comment Edited successfully')
 def delete_comment(request, comment_id):
-    comment = get_object_or_404(Comment, pk=comment_id)
-
     if request.method == 'POST':
+        comment = get_object_or_404(Comment, pk=comment_id)
         comment.delete()
-
-        return JsonResponse({'success': True})
-
-    return render(request, 'company/godown_overview.html', {'comment': comment})
+        return JsonResponse({'message': 'Comment deleted successfully'})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+def history_page(request):
+    return render(request,'company/godownhistory.html')
+def holiday_overview(request):
+    holidays = Holiday.objects.all()
+    return render(request, 'company/holidayoverview.html', {'holidays': holidays})
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
@@ -684,7 +678,6 @@ def add_holiday(request):
                 end_date__gte=end_date
             )
             if existing_holidays.exists():
-                messages.error(request, 'A holiday with the same date range already exists.')
                 return HttpResponseBadRequest('A holiday with the same date range already exists.')
 
             # Fetch the currently logged-in company details
@@ -702,8 +695,6 @@ def add_holiday(request):
                 company=company_details  # Associate the holiday with the company
             )
             holiday.save()
-
-            messages.success(request, 'Holiday added successfully!')
             return redirect('show_holidays')
         else:  # Handle the GET request
             # Fetch the currently logged-in company details
@@ -722,59 +713,71 @@ def add_holiday(request):
         return redirect('/')
 
 def show_holidays(request):
-    holidays = Holiday.objects.filter(start_date__isnull=False, end_date__isnull=False).annotate(
-        start_month=TruncMonth('start_date'),
-        end_month=TruncMonth('end_date'),
-        day_of_month=ExtractDay('start_date'),
-        duration=ExpressionWrapper(F('end_date') - F('start_date'), output_field=fields.DurationField())
-    ).values('start_month', 'end_month', 'day_of_month', 'duration')
+    if 'login_id' in request.session:
+        login_id = request.session['login_id']
+        try:
+            log_details = LoginDetails.objects.get(id=login_id)
+            company_details = log_details.companydetails_set.first()
 
-    cumulative_counts = {}
+            holidays = Holiday.objects.filter(start_date__isnull=False, end_date__isnull=False, company=company_details).annotate(
+                start_month=TruncMonth('start_date'),
+                end_month=TruncMonth('end_date'),
+                day_of_month=ExtractDay('start_date'),
+                duration=ExpressionWrapper(F('end_date') - F('start_date'), output_field=fields.DurationField())
+            ).values('start_month', 'end_month', 'day_of_month', 'duration')
 
-    for holiday in holidays:
-        current_month = holiday['start_month']
+            cumulative_counts = {}
 
-        while current_month <= holiday['end_month']:
-            month_year_key = (current_month.year, current_month.month)
+            for holiday in holidays:
+                current_month = holiday['start_month']
 
-            if holiday['duration'].days == 0:
-                working_days = count_days_in_month(current_month.year, current_month.month) - cumulative_counts.get(month_year_key, {}).get('holidays', 0)
-                holidays_count = 1
-            else:
-                start_day = max(holiday['day_of_month'], 1)
-                end_day = min(start_day + holiday['duration'].days - 1, count_days_in_month(current_month.year, current_month.month))
-                affected_days = max(end_day - start_day + 1, 0)
+                while current_month <= holiday['end_month']:
+                    month_year_key = (current_month.year, current_month.month)
 
-                if current_month == holiday['start_month']:
-                    affected_days = min(affected_days, count_days_in_month(current_month.year, current_month.month) - holiday['day_of_month'] + 1)
+                    if holiday['duration'].days == 0:
+                        working_days = count_days_in_month(current_month.year, current_month.month) - cumulative_counts.get(month_year_key, {}).get('holidays', 0)
+                        holidays_count = 1
+                        
+                        # Add 1 holiday which is not subtracted from working days
+                        working_days -= 1
 
-                remaining_days_in_second_month = (holiday['duration'].days-1) - affected_days
+                    else:
+                        start_day = max(holiday['day_of_month'], 1)
+                        end_day = min(start_day + holiday['duration'].days - 1, count_days_in_month(current_month.year, current_month.month))
+                        affected_days = max(end_day - start_day + 1, 0)
 
+                        if current_month == holiday['start_month']:
+                            affected_days = min(affected_days, count_days_in_month(current_month.year, current_month.month) - holiday['day_of_month'] + 1)
 
-                working_days = count_days_in_month(current_month.year, current_month.month) - affected_days
-                holidays_count = affected_days
+                        remaining_days_in_second_month = (holiday['duration'].days-1) - affected_days
 
-            if month_year_key in cumulative_counts:
-                cumulative_counts[month_year_key]['holidays'] += holidays_count
-                cumulative_counts[month_year_key]['working_days'] = count_days_in_month(current_month.year, current_month.month) - cumulative_counts[month_year_key]['holidays'] 
-                
-            else:
-                cumulative_counts[month_year_key] = {
-                    'working_days': working_days,
-                    'holidays': holidays_count,
-                    'start_month': current_month,
-                }
+                        working_days = count_days_in_month(current_month.year, current_month.month) - affected_days
+                        holidays_count = affected_days
 
-            current_month = (current_month + relativedelta(months=1)).replace(day=1)
+                    if month_year_key in cumulative_counts:
+                        cumulative_counts[month_year_key]['holidays'] += holidays_count
+                        cumulative_counts[month_year_key]['working_days'] = count_days_in_month(current_month.year, current_month.month) - cumulative_counts[month_year_key]['holidays']
+                        
+                    else:
+                        cumulative_counts[month_year_key] = {
+                            'working_days': working_days,
+                            'holidays': holidays_count,
+                            'start_month': current_month,
+                        }
 
-    context = {'holidays': [{'month': value['start_month'].month, 'year': value['start_month'].year,
-                             'total_days': count_days_in_month(value['start_month'].year, value['start_month'].month),
-                             'cumulative_working_days': value['working_days'],
-                             'holidays_count': value['holidays'],
-                             **value} for value in cumulative_counts.values()]}
-    return render(request, 'company/showholiday.html', context)
+                    current_month = (current_month + relativedelta(months=1)).replace(day=1)
 
+            context = {'holidays': [{'month': value['start_month'].month, 'year': value['start_month'].year,
+                                     'total_days': count_days_in_month(value['start_month'].year, value['start_month'].month),
+                                     'cumulative_working_days': value['working_days'],
+                                     'holidays_count': value['holidays'],
+                                     **value} for value in cumulative_counts.values()]}
+            return render(request, 'company/showholiday.html', context)
 
+        except (LoginDetails.DoesNotExist, CompanyDetails.DoesNotExist):
+            return HttpResponse("Login details or company details not found.")
+    else:
+        return redirect('/')
 def count_days_in_month(year, month):
     if month in {1, 3, 5, 7, 8, 10, 12}:
         return 31
@@ -785,6 +788,16 @@ def count_days_in_month(year, month):
             return 28  # Non-leap year
     else:
         return 30
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 # -------------------------------Staff section--------------------------------
 
 # staff dashboard

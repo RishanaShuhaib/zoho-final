@@ -23,6 +23,7 @@ urlpatterns = [
     path('Company/Add-Unit', views.add_unit, name='add_unit'),
     path('Company/Show-Holidays/', views.show_holidays, name='show_holidays'),
     path('Company/Add-Holiday/', views.add_holiday, name='add_holiday'),
+    path('Company/Holiday-Overview//', views.holiday_overview, name='holiday_overview'),
     path('Company/Godown-Overview/<int:godown_id>/', views.godown_overview, name='godown_overview'),
     path('Company/Edit_Godown/', views.edit_godown, name='edit_godown'),
     path('Company/Edit_Page/<int:godown_id>/', views.edit_page, name='edit_page'),
@@ -30,7 +31,8 @@ urlpatterns = [
     path('Company/Add_Comment/<int:godown_id>/', views.add_comment, name='add_comment'),
     path('Company/Show_Comments/<int:godown_id>/', views.show_comments, name='show_comments'),
     path('Company/Edit_Comment/', views.edit_comment, name='edit_comment'),
-    #path('Company/Delete_Comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
+    path('Company/Delete-Comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
+    path('Company/History-Page/', views.history_page, name='history_page'),
 
 
 
