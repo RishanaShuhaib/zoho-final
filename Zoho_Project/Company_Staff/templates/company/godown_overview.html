@@ -207,9 +207,8 @@
                 <div class="row mr-0  ">
                     <!-- Search input and button -->
                     <div class="col-md-5 mb-1 mb-md-0" >
-                        <div class="d-flex">
-                            <input type="text" class="col-md-2 mb-1 mb-md-0"id="searchInput" style="width:80px;"placeholder="Search Here..." class="mr-2 d-inline form-control">
-                            <button onclick="searchTable()" class="btn btn-custom "><i class="fas fa-search"></i></button>
+                        <div class="d-flex align-items-center mr-2">
+                            <input type="text" id="searchInput" oninput="searchTable()" placeholder="Search Here..." class="mr-2 form-control" style="width: 130px;">
                         </div>
                     </div>
                 
@@ -460,34 +459,37 @@ function printGodownDetails() {
     document.body.innerHTML = originalContents;
 }
 
-        function searchTable() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("searchInput");
-            filter = input.value.toUpperCase();
-            table = document.querySelector(".godown-table");
-            tr = table.getElementsByTagName("tr");
-        
-            for (i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName("td")[0]; // Adjust index based on the column you want to search
-        
-                // Check if td is not null or undefined
-                if (td) {
-                    txtValue = td.textContent || td.innerText;
-        
-                    // Convert both filter and text content to strings for case-insensitive search
-                    var filterString = String(filter);
-                    var txtValueString = String(txtValue);
-        
-                    // Use the includes method for a simple substring search
-                    if (txtValueString.toUpperCase().includes(filterString)) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
+function searchTable() {
+    var input, filter, table, tr, th, td, i, j, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.querySelector(".godown-table");
+    tr = table.getElementsByTagName("tr");
+
+    // Loop through all rows
+    for (i = 0; i < tr.length; i++) {
+        th = tr[i].getElementsByTagName("th");
+        if (th.length > 0) {
+            // Skip if the row is a header row
+            continue;
+        }
+        // Loop through all cells in the current row
+        var found = false;
+        for (j = 0; j < tr[i].cells.length; j++) {
+            td = tr[i].cells[j];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    // If the filter text is found in any cell, set found to true and break the inner loop
+                    found = true;
+                    break;
                 }
             }
         }
-        
+        // If any cell contains the filter text, display the row, otherwise hide it
+        tr[i].style.display = found ? "" : "none";
+    }
+}
         function sortTable(column) {
             var table, rows, switching, i, shouldSwitch;
             table = document.querySelector(".godown-table");

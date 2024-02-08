@@ -33,6 +33,7 @@ urlpatterns = [
     path('Company/Edit_Comment/', views.edit_comment, name='edit_comment'),
     path('Company/Delete-Comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
     path('Company/History-Page/', views.history_page, name='history_page'),
+    path('Company/get_Holidays/', views.get_holidays, name='get_holidays'),
 
 
 

@@ -648,8 +648,72 @@ def delete_comment(request, comment_id):
 def history_page(request):
     return render(request,'company/godownhistory.html')
 def holiday_overview(request):
-    holidays = Holiday.objects.all()
-    return render(request, 'company/holidayoverview.html', {'holidays': holidays})
+    if 'login_id' in request.session:
+        login_id = request.session['login_id']
+        try:
+            log_details = LoginDetails.objects.get(id=login_id)
+            company_details = log_details.companydetails_set.first()
+
+            holidays = Holiday.objects.filter(start_date__isnull=False, end_date__isnull=False, company=company_details).annotate(
+                start_month=TruncMonth('start_date'),
+                end_month=TruncMonth('end_date'),
+                duration=ExpressionWrapper(F('end_date') - F('start_date') + timedelta(days=1), output_field=fields.DurationField())
+            )
+
+            cumulative_counts = {}
+
+            for holiday in holidays:
+                current_month = holiday.start_month
+
+                while current_month <= holiday.end_month:
+                    month_year_key = (current_month.year, current_month.month)
+
+                    if holiday.duration.days == 0:
+                        holidays_count = 1
+                        working_days = count_days_in_month(current_month.year, current_month.month) - cumulative_counts.get(month_year_key, {}).get('holidays', 0)
+                        # Add 1 holiday which is not subtracted from working days
+                        working_days -= 1
+                    else:
+                        start_day = max(holiday.start_date.day - 1, 1)
+                        end_day = min(start_day + holiday.duration.days, count_days_in_month(current_month.year, current_month.month)+1)
+                        affected_days = max(end_day - start_day , 0)
+
+                        if current_month == holiday.start_month:
+                            affected_days = min(affected_days, count_days_in_month(current_month.year, current_month.month) - holiday.start_date.day + 1)
+
+                        remaining_days_in_second_month = (holiday.duration.days - 1) - affected_days
+
+                        working_days = count_days_in_month(current_month.year, current_month.month) - affected_days
+                        holidays_count = affected_days
+
+                    if month_year_key in cumulative_counts:
+                        cumulative_counts[month_year_key]['holidays'] += holidays_count
+                        cumulative_counts[month_year_key]['working_days'] = count_days_in_month(current_month.year, current_month.month) - cumulative_counts[month_year_key]['holidays']
+                    else:
+                        cumulative_counts[month_year_key] = {
+                            'working_days': working_days,
+                            'holidays': holidays_count,
+                            'start_month': current_month,
+                            
+                        }
+
+                    current_month = (current_month + timedelta(days=32 - current_month.day)).replace(day=1)
+
+            context = {'cumulative_counts': cumulative_counts}
+            return render(request, 'company/holidayoverview.html', context)
+
+        except (LoginDetails.DoesNotExist, CompanyDetails.DoesNotExist):
+            return HttpResponse("Login details or company details not found.")
+    else:
+        return redirect('/')
+def get_holidays(request):
+    if request.method == 'GET':
+        month = request.GET.get('month')
+        holidays = Holiday.objects.filter(start_date__month=month)
+        data = [{'start_date': holiday.start_date.strftime('%Y-%m-%d')} for holiday in holidays]
+        return JsonResponse({'holidays': data})
+    else:
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
@@ -718,7 +782,6 @@ def show_holidays(request):
         try:
             log_details = LoginDetails.objects.get(id=login_id)
             company_details = log_details.companydetails_set.first()
-
             holidays = Holiday.objects.filter(start_date__isnull=False, end_date__isnull=False, company=company_details).annotate(
                 start_month=TruncMonth('start_date'),
                 end_month=TruncMonth('end_date'),
@@ -742,8 +805,8 @@ def show_holidays(request):
                         working_days -= 1
 
                     else:
-                        start_day = max(holiday['day_of_month'], 1)
-                        end_day = min(start_day + holiday['duration'].days - 1, count_days_in_month(current_month.year, current_month.month))
+                        start_day = max(holiday['day_of_month']-1, 1)
+                        end_day = min(start_day + holiday['duration'].days, count_days_in_month(current_month.year, current_month.month))
                         affected_days = max(end_day - start_day + 1, 0)
 
                         if current_month == holiday['start_month']:

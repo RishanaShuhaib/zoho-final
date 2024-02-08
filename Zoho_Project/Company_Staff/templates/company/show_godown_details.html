@@ -29,10 +29,9 @@
     <div class="container-fluid">
       <div class="d-flex flex-wrap align-items-center" style="padding: 5px;">
 
-        <div class="d-flex flex-wrap">
-          <input type="text" id="searchInput" placeholder="Search Here..." class="mr-2 d-inline form-control mb-2 mb-md-0" style="width: 150px;">
-          <button onclick="searchTable()" class="btn btn-custom ml-md-2 mb-2 mb-md-0" style="padding-right: 5px;"><i class="fas fa-search"></i></button>
-        </div>
+        <div class="d-flex align-items-center mr-2">
+          <input type="text" id="searchInput" oninput="searchTable()" placeholder="Search Here..." class="mr-2 form-control" style="width: 150px;">
+      </div>
 
         <div class="ml-md-3">
           <div class="input-group">
@@ -173,7 +172,7 @@
       }
     }
   }
-
+  document.getElementById("searchInput").addEventListener("input", searchTableOnChange);
   function importData() {
     var input = document.createElement('input');
     input.type = 'file';
@@ -232,53 +231,89 @@
   }
   var currentSortColumn = '';  // Variable to keep track of the current sort column
 
-  function sortTable(column) {
-    var table, rows, switching, i, x, y, shouldSwitch;
-    table = document.querySelector(".table");
+  var currentSortColumn = ''; // Variable to keep track of the current sorting column
+
+function sortTable(column) {
+    var table, rows, switching, i, shouldSwitch;
+    table = document.querySelector(".holiday-table");
     switching = true;
 
     while (switching) {
-      switching = false;
-      rows = table.rows;
+        switching = false;
+        rows = table.rows;
 
-      for (i = 1; i < (rows.length - 1); i++) {
-        shouldSwitch = false;
+        // Loop through all table rows (except the header)
+        for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
 
-        x = rows[i].getElementsByTagName("td")[column];
-        y = rows[i + 1].getElementsByTagName("td")[column];
+            // Get the two elements to compare
+            var x = rows[i].getElementsByTagName("td")[0]; // Assuming the first column contains the month
+            var y = rows[i + 1].getElementsByTagName("td")[0];
 
-        // Check if the two rows should switch places
-        if (currentSortColumn === column && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-          shouldSwitch = true;
-          break;
-        } else if (currentSortColumn !== column && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-          shouldSwitch = true;
-          break;
+            // Check if the two rows should switch place based on the selected option
+            if (column === "Month") {
+                // Get the month names
+                var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                var indexX = months.indexOf(x.innerHTML.split(" ")[0]);
+                var indexY = months.indexOf(y.innerHTML.split(" ")[0]);
+                if (indexX > indexY) {
+                    shouldSwitch = true;
+                    break;
+                }
+            } else if (column === "Year") {
+                var currentYear = parseInt(x.innerHTML.split(" ")[1]);
+                var nextYear = parseInt(y.innerHTML.split(" ")[1]);
+                if (currentYear > nextYear) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
         }
-      }
 
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true;
-      }
+        if (column === "All") {
+            if (currentSortColumn !== "All") {
+                // Restore the original order of rows
+                for (i = 1; i < (rows.length - 1); i++) {
+                    rows[i].parentNode.appendChild(rows[i]);
+                }
+                currentSortColumn = "All"; // Update the current sort column
+            }
+            break; // Exit the loop since sorting is not needed
+        }
+
+        if (shouldSwitch) {
+            // If a switch was needed, perform the switch and mark that a switch has been done
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+        }
     }
 
+    // Update event listeners after sorting
+    updateEventListeners();
+    
     // Update the current sort column
     currentSortColumn = column;
-  }
+}
 
-  // Attach click event listeners to the sort buttons
-  document.getElementById('sortAll').addEventListener('click', function () {
-    sortTable(0);
-  });
+// Attach click event listeners to the sort buttons
+document.getElementById('sortAll').addEventListener('click', function () {
+    sortTable("All");
+});
 
-  document.getElementById('sortGodownName').addEventListener('click', function () {
-    sortTable(1);
-  });
+document.getElementById('sortMonth').addEventListener('click', function () {
+    sortTable("Month");
+});
 
-  document.getElementById('sortQuantity').addEventListener('click', function () {
-    sortTable(3);
-  });
+document.getElementById('sortYear').addEventListener('click', function () {
+    sortTable("Year");
+});
+
+// Example for secondary sorting based on the primary sorting column
+document.getElementById('sortGodownName').addEventListener('click', function () {
+    // Here you can call the sortTable function with the appropriate column based on the current state
+    sortTable("GodownName"); // Update "GodownName" with the actual column name
+});
+
   function applyFilter(filterValue) {
     var table, rows, i, td, status;
     table = document.querySelector(".table");

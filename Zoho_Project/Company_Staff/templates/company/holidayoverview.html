@@ -9,6 +9,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Page Title</title>
     <style>
+        .calendar {
+            width: 100%;
+            max-width: 800px; /* Adjust the maximum width as needed */
+            margin: 0 ;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+            height:200px;
+        }
+
+        .calendar th,
+        .calendar td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .calendar th {
+            background-color: #f2f2f2;
+        }
+        .calendar .holiday {
+            background-color: #ffcccc; /* Light red background */
+            color: #f00; /* Red text color */
+            font-weight: bold; /* Bold text for holidays */
+        }
+        .calendar td {
+            height: 80px; /* Adjust cell height as needed */
+        }
+
+        .calendar td:hover {
+            background-color: #f2f2f2; /* Add hover effect */
+        }
+
+        .month-year {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
         .btn-custom { /* Set the minimum width to ensure all buttons have the same width */
             height: auto; /* Allow the height to adjust based on content */
             text-align: center; /* Center the text horizontally within the button */
@@ -39,47 +76,47 @@
             padding: 2px;
             border-right: 1px solid #ccc;
         }
-        #godownList {
+        #holidayList {
             width: 30%; /* Adjust the percentage as needed */
         }
-        #godownDetails{
+        #holidayDetails{
             width:70%;
         }
-        #godownList {
+        #holidayList {
             flex: 1; /* Adjust the flex value as needed */
         }
         
-        #godownDetails {
+        #holidayDetails {
             flex: 2; /* Adjust the flex value as needed */
         }
         
         /* Media query for smaller screens */
         @media screen and (max-width: 992px) {
-            #godownList {
+            #holidayList {
                 width: 100%; /* Full width on smaller screens */
             }
-            #godownDetails {
+            #holidayDetails {
                 width: 100%; /* Full width on smaller screens */
             }
         }
-        .godown-list {
+        .holiday-list {
             list-style: none;
             padding: 0;
             display: flex;
             flex-direction: column;
         }
     
-        .godown-item {
+        .holiday-item {
             cursor: pointer;
             padding: 10px;
             border-bottom: 1px solid #eee;
         }
     
-        .godown-details {
+        .holiday-details {
             padding: 20px;
         }
     
-        .godown-card {
+        .holiday-card {
             border: 1px solid #ccc;
             margin-bottom: 10px;
             padding: 10px;
@@ -98,28 +135,30 @@
             flex: 1; /* Allow the flex items to grow and fill the available space */
         }
     
-        .godown-card {
+        .holiday-card {
             border: 1px solid #ccc;
             margin-bottom: 10px;
             padding: 10px;
             font-size: 15px; /* Adjust the font size as needed */
         }
     
-        .godown-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px; /* Adjust the margin as needed */
+        .holiday-table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin-top: 20px !important; /* Adjust the margin as needed */
+        }
+        .holiday-table td{
+            color:white !important;
+        }
+        .holiday-table th,
+        .holiday-table td {
+            padding: 10px !important;
+            text-align: left !important;
         }
     
-        .godown-table th,
-        .godown-table td {
-            padding: 10px;
-            text-align: left;
-        }
-    
-        .godown-table th {
-            background-color: #f5f5f5; /* Header background color */
-            color: black;
+        .holiday-table th {
+            background-color: #f5f5f5 !important; /* Header background color */
+            color: black !important;
         }
     
         .btn-custom {
@@ -162,7 +201,7 @@
 
         /* Adjust the width of the left flex container for larger screens */
         @media screen and (min-width: 993px) {
-            #godownList {
+            #holidayList {
                 width: 30%; /* Adjust the percentage as needed */
             }
         }
@@ -200,77 +239,250 @@
     <div class="flex-row">
 
         <!-- Left Vertical Container - Godown List -->
-        <div class="flex-item col-md-3mm " id="godownList">
+        <div class="flex-item col-md-3mm " id="holidayList">
             
             <h2 style="color:white;">Holiday List</h2>
             <div class="container">
                 <div class="row mr-0  ">
                     <!-- Search input and button -->
                     <div class="col-md-6 mb-1 mb-md-0" >
-                        <div class="d-flex">
-                            <input type="text" class="col-md-2 mb-1 mb-md-0"id="searchInput" style="width:100px;"placeholder="Search Here..." class="mr-2 d-inline form-control">
-                            <button onclick="searchTable()" class="btn btn-custom "><i class="fas fa-search"></i></button>
+                        <div class="d-flex align-items-center mr-2">
+                            <input type="text" id="searchInput" oninput="searchTable()" placeholder="Search Here..." class="mr-2 form-control" style="width: 130px;">
                         </div>
                     </div>
 
-                    <!-- Filter dropdown -->
+                    <!-- sort dropdown -->
                     <div class="col-md-2 mb-1 mb-md-0">
-                        <div class="input-group">
+                        <div class="input-group mr-3">
                             <div class="input-group-prepend">
-                                <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-filter"></i></button>
-                                <div class="dropdown-menu" style="color:white;">
-                                    <a class="dropdown-item" href="#" onclick="applyFilter('all')">All</a>
-                                    <a class="dropdown-item" href="#" onclick="applyFilter('active')">Active</a>
-                                    <a class="dropdown-item" href="#" onclick="applyFilter('inactive')">Inactive</a>
-                                </div>
+                              <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Sort</button>
+                              <div class="dropdown-menu" style="color:white;">
+                                <a class="dropdown-item" id="sortAll" href="#" onclick="sortTable('All')">All</a>
+                                <a class="dropdown-item" id="sortMonth" href="#" onclick="sortTable('Month')">Month</a>
+                                <a class="dropdown-item" id="sortYear" href="#" onclick="sortTable('Year')">Year</a>
+                              </div>
                             </div>
-                        </div>
+                          </div>
                     </div>
                 
                     <!-- New button -->
                     <div class="col-md-1 mb-1 mb-md-0">
-                        <a href="#" class="btn btn-custom">
+                        <a href="{% url 'add_holiday' %}" class="btn btn-custom">
                             <i class="fas fa-plus"></i>
                         </a>
                     </div>
                 </div>
             </div>
-            <table class="holiday-table" style="color: white;">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th>Holidays</th>
+            <table id="holidayTable" class="holiday-table"style="color:white;">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Total Holidays</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, value in cumulative_counts.items %}
+                    <tr  onclick="showCalendar('{{ value.start_month|date:"F Y" }}')">
+                        <td>{{ value.start_month|date:"F Y" }}</td>
+                        <td>{{ value.holidays }}</td>
+                        <input type="hidden" id="holidayId_{{ value.holiday_id }}" value="{{ value.holiday_id }}">
                     </tr>
-                </thead>
-                <tbody style="color:white;">
-                    {% for holiday in holidays %}
-                    <tr>
-                        {% if holiday.start_month == holiday.end_month %}
-                            <td>{{ holiday.start_month|date:"F" }}</td>
-                        {% else %}
-                            <td>{{ holiday.start_month|date:"F" }} - {{ holiday.end_month|date:"F" }}</td>
-                        {% endif %}
-                        <td>{{ holiday.holidays }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                {% endfor %}
+            </tbody>
+        </table>
         </div>
 
         <!-- Right Vertical Container - Godown Details -->
-        <div class="flex-item col-md-5 right-container" id="godownDetails">
-        <div class="godown-details" style="margin-top: 100px; background: white; color: black;">
-            <div class="godown-card" id="selectedGodownDetails">
-                
-            </div>
+        <div class="flex-item col-md-5 right-container" id="holidayDetails" style="color:white;">
+            <div id="calendarContainer" style="margin-top: 10px; background: white; color: black;"></div>
         </div>
-        </div>
-    </div>
-</div>
-</div>
-    <script>
-        
-    </script>
+<script>
+   
+    
+    function showCalendar(month) {
+        // Create a new Date object for the selected month
+        var selectedMonth = new Date(month);
+        // Get the year and month from the selected date
+        var year = selectedMonth.getFullYear();
+        var monthIndex = selectedMonth.getMonth();
+        // Create a new Date object for the first day of the selected month
+        var firstDay = new Date(year, monthIndex, 1);
+        // Get the number of days in the selected month
+        var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+        // Create an array to hold the days of the week
+        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        // Create a new HTML string for the calendar
+        var calendarHTML = '<table class="calendar">';
+        // Add the month and year name as the first row above the table
+        calendarHTML += '<tr><th colspan="7" class="month-year">' + month + '</th></tr>';
+        // Add the day names as table headers
+        calendarHTML += '<tr>';
+        for (var i = 0; i < daysOfWeek.length; i++) {
+            calendarHTML += '<th>' + daysOfWeek[i].substring(0, 3) + '</th>';
+        }
+        calendarHTML += '</tr><tr>';
+        // Calculate the day of the week for the first day of the month
+        var firstDayOfWeek = firstDay.getDay();
+        // Add empty cells for the days before the first day of the month
+        for (var i = 0; i < firstDayOfWeek; i++) {
+            calendarHTML += '<td></td>';
+        }
+        // Add cells for each day of the month
+        for (var i = 1; i <= daysInMonth; i++) {
+            // Check if it's the last day of the week
+            if ((firstDayOfWeek + i - 1) % 7 === 0 && i !== 1) {
+                calendarHTML += '</tr><tr>';
+            }
+            // Check if the current day is a holiday (you need to implement this logic)
+            var isHoliday = false; // Placeholder for holiday detection logic
+            // Add the day number as a cell in the table, with a CSS class for holidays
+            if (isHoliday) {
+                calendarHTML += '<td class="holiday">' + i + '</td>';
+            } else {
+                calendarHTML += '<td>' + i + '</td>';
+            }
+        }
+        // Close the last row and the table
+        calendarHTML += '</tr></table>';
+        // Display the calendar in the calendarContainer div
+        document.getElementById('calendarContainer').innerHTML = calendarHTML;
+        $.ajax({
+            url: '/get_holidays/',
+            method: 'GET',
+            data: { month: month },  // Send the selected month to the backend
+            success: function(data) {
+                var holidays = data.holidays;
+                // Loop through holidays and mark holiday cells in the calendar
+                holidays.forEach(function(holiday) {
+                    var holidayDate = new Date(holiday.start_date);
+                    var day = holidayDate.getDate();
+                    var cell = document.querySelector('.calendar td:nth-child(' + (firstDayOfWeek + day) + ')');
+
+                    if (cell) {
+                        cell.classList.add('holiday'); // Add 'holiday' class to mark holiday cells
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching holidays:', error);
+            }
+        });
+    }
+    function showHolidayDetails(holidayId) {
+        // AJAX request to fetch holiday details using the holiday ID
+        $.ajax({
+            url: '/get_holiday_details/',
+            method: 'GET',
+            data: { holiday_id: holidayId },
+            success: function(data) {
+                var holidays = data.holidays;
+                holidays.forEach(function(holiday) {
+                    var holidayDate = new Date(holiday.start_date);
+                    var day = holidayDate.getDate();
+                    var calendarTable = document.querySelector('.calendar'); // Select the calendar table
+                    var calendarTable = document.querySelector('.calendar'); // Select the calendar table
+var cells = calendarTable.getElementsByTagName('td'); // Get all cells in the table
+ // Get all cells in the table
+                    for (var i = 0; i < cells.length; i++) {
+                        if (parseInt(cells[i].innerHTML) === day) {
+                            cells[i].classList.add('holiday'); // Add 'holiday' class to mark holiday cells
+                        }
+                    }
+                });
+            },
+        });
+    }
+    function searchTable() {
+        var input, filter, table, tr, th, td, i, j, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.querySelector(".holiday-table");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all rows
+        for (i = 0; i < tr.length; i++) {
+            th = tr[i].getElementsByTagName("th");
+            if (th.length > 0) {
+                // Skip if the row is a header row
+                continue;
+            }
+            // Loop through all cells in the current row
+            var found = false;
+            for (j = 0; j < tr[i].cells.length; j++) {
+                td = tr[i].cells[j];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        // If the filter text is found in any cell, set found to true and break the inner loop
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            // If any cell contains the filter text, display the row, otherwise hide it
+            tr[i].style.display = found ? "" : "none";
+        }
+    }
+    function sortTable(option) {
+        var table, rows, switching, i, shouldSwitch;
+        table = document.querySelector(".holiday-table");
+        switching = true;
+    
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+    
+            // Loop through all table rows (except the header)
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+    
+                // Get the two elements to compare
+                var x = rows[i].getElementsByTagName("td")[0]; // Assuming the first column contains the month
+                var y = rows[i + 1].getElementsByTagName("td")[0];
+    
+                // Check if the two rows should switch place based on the selected option
+                if (option === "Month") {
+                    // Get the month names
+                    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                    var indexX = months.indexOf(x.innerHTML.split(" ")[0]);
+                    var indexY = months.indexOf(y.innerHTML.split(" ")[0]);
+                    if (indexX > indexY) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (option === "Year") {
+                    var currentYear = parseInt(x.innerHTML.split(" ")[1]);
+                    var nextYear = parseInt(y.innerHTML.split(" ")[1]);
+                    if (currentYear > nextYear) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+    
+            if (option === "All") {
+                if (currentSortColumn !== "All") {
+                    // Restore the original order of rows
+                    var originalOrder = Array.from(rows).slice(1, -1); // Exclude header and footer rows
+                    originalOrder.forEach(row => table.appendChild(row));
+                    currentSortColumn = "All"; // Update the current sort column
+                }
+                return; // Exit the function since sorting is not needed
+            }
+    
+            if (shouldSwitch) {
+                // If a switch was needed, perform the switch and mark that a switch has been done
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+    
+        // Update event listeners after sorting
+        updateEventListeners();
+    }
+    
+</script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.js"></script>
