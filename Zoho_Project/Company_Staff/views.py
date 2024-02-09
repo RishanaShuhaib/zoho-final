@@ -5,6 +5,7 @@ from Register_Login.views import logout
 from django.contrib import messages
 from django.conf import settings
 import json
+from django import template
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from datetime import date
@@ -706,14 +707,21 @@ def holiday_overview(request):
             return HttpResponse("Login details or company details not found.")
     else:
         return redirect('/')
-def get_holidays(request):
-    if request.method == 'GET':
-        month = request.GET.get('month')
-        holidays = Holiday.objects.filter(start_date__month=month)
-        data = [{'start_date': holiday.start_date.strftime('%Y-%m-%d')} for holiday in holidays]
-        return JsonResponse({'holidays': data})
-    else:
-        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+def get_holidays_api(request, year, month):
+    # Fetch holidays from the database for the given year and month
+    holidays = Holiday.objects.filter(start_date__year=year, start_date__month=month)
+    
+    # Serialize the holidays data
+    serialized_holidays = [{
+        'id': holiday.id,
+        'start_date': holiday.start_date.strftime('%Y-%m-%d'),
+        'end_date': holiday.end_date.strftime('%Y-%m-%d'),
+        'holiday_name': holiday.holiday_name,
+        # Add more fields if needed
+    } for holiday in holidays]
+    
+    # Return JSON response
+    return JsonResponse({'holidays': serialized_holidays})
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']

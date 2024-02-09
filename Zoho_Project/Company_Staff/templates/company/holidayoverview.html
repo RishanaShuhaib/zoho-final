@@ -4,10 +4,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head><script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  
+  
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Page Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.js" defer></script>
+   
+
     <style>
         .calendar {
             width: 100%;
@@ -17,7 +24,9 @@
             font-family: Arial, sans-serif;
             height:200px;
         }
-
+        .calendar th{
+            color:black;
+        }
         .calendar th,
         .calendar td {
             border: 1px solid #ddd;
@@ -37,9 +46,6 @@
             height: 80px; /* Adjust cell height as needed */
         }
 
-        .calendar td:hover {
-            background-color: #f2f2f2; /* Add hover effect */
-        }
 
         .month-year {
             font-size: 18px;
@@ -273,156 +279,192 @@
                     </div>
                 </div>
             </div>
-            <table id="holidayTable" class="holiday-table"style="color:white;">
-            <thead>
-                <tr>
+            <table id="holidayTable" class="holiday-table">
+                <thead>
+                  <tr>
                     <th>Month</th>
                     <th>Total Holidays</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for key, value in cumulative_counts.items %}
-                    <tr  onclick="showCalendar('{{ value.start_month|date:"F Y" }}')">
-                        <td>{{ value.start_month|date:"F Y" }}</td>
-                        <td>{{ value.holidays }}</td>
-                        <input type="hidden" id="holidayId_{{ value.holiday_id }}" value="{{ value.holiday_id }}">
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key, value in cumulative_counts.items %}
+                  <tr data-holiday="{{ value.holidays }}">
+                    <td>{{ value.start_month|date:"F Y" }}</td>
+                    <td>{{ value.holidays }}</td>
+                    <input type="hidden" id="holidayId_{{ value.holiday_id }}" value="{{ value.holiday_id }}">
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <!-- Right Vertical Container - Godown Details -->
+            <div class="flex-item col-md-5 right-container" id="holidayDetails">
+              <div id="calendarContainer"></div>
+            </div>
+          </div>
         </div>
-
-        <!-- Right Vertical Container - Godown Details -->
-        <div class="flex-item col-md-5 right-container" id="holidayDetails" style="color:white;">
-            <div id="calendarContainer" style="margin-top: 10px; background: white; color: black;"></div>
-        </div>
-<script>
-   
-    
-    function showCalendar(month) {
-        // Create a new Date object for the selected month
-        var selectedMonth = new Date(month);
-        // Get the year and month from the selected date
-        var year = selectedMonth.getFullYear();
-        var monthIndex = selectedMonth.getMonth();
-        // Create a new Date object for the first day of the selected month
-        var firstDay = new Date(year, monthIndex, 1);
-        // Get the number of days in the selected month
-        var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-        // Create an array to hold the days of the week
-        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        // Create a new HTML string for the calendar
-        var calendarHTML = '<table class="calendar">';
-        // Add the month and year name as the first row above the table
-        calendarHTML += '<tr><th colspan="7" class="month-year">' + month + '</th></tr>';
-        // Add the day names as table headers
-        calendarHTML += '<tr>';
-        for (var i = 0; i < daysOfWeek.length; i++) {
-            calendarHTML += '<th>' + daysOfWeek[i].substring(0, 3) + '</th>';
-        }
-        calendarHTML += '</tr><tr>';
-        // Calculate the day of the week for the first day of the month
-        var firstDayOfWeek = firstDay.getDay();
-        // Add empty cells for the days before the first day of the month
-        for (var i = 0; i < firstDayOfWeek; i++) {
-            calendarHTML += '<td></td>';
-        }
-        // Add cells for each day of the month
-        for (var i = 1; i <= daysInMonth; i++) {
-            // Check if it's the last day of the week
-            if ((firstDayOfWeek + i - 1) % 7 === 0 && i !== 1) {
-                calendarHTML += '</tr><tr>';
-            }
-            // Check if the current day is a holiday (you need to implement this logic)
-            var isHoliday = false; // Placeholder for holiday detection logic
-            // Add the day number as a cell in the table, with a CSS class for holidays
-            if (isHoliday) {
-                calendarHTML += '<td class="holiday">' + i + '</td>';
-            } else {
-                calendarHTML += '<td>' + i + '</td>';
-            }
-        }
-        // Close the last row and the table
-        calendarHTML += '</tr></table>';
-        // Display the calendar in the calendarContainer div
-        document.getElementById('calendarContainer').innerHTML = calendarHTML;
-        $.ajax({
-            url: '/get_holidays/',
-            method: 'GET',
-            data: { month: month },  // Send the selected month to the backend
-            success: function(data) {
-                var holidays = data.holidays;
-                // Loop through holidays and mark holiday cells in the calendar
-                holidays.forEach(function(holiday) {
-                    var holidayDate = new Date(holiday.start_date);
-                    var day = holidayDate.getDate();
-                    var cell = document.querySelector('.calendar td:nth-child(' + (firstDayOfWeek + day) + ')');
-
-                    if (cell) {
-                        cell.classList.add('holiday'); // Add 'holiday' class to mark holiday cells
-                    }
+      </div>
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var rows = document.querySelectorAll("#holidayTable tbody tr");
+            rows.forEach(function (row) {
+                row.addEventListener("click", function () {
+                    var month = row.cells[0].innerText;
+                    var year = parseInt(month.split(" ")[1]);
+                    var monthIndex = new Date(Date.parse(month)).getMonth();
+                    // Fetch holidays for the selected month and year
+                    fetch(`/api/holidays/${year}/${monthIndex + 1}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Extract holiday start and end dates from the response
+                            var holidays = data.holidays.map(holiday => ({
+                                startDate: new Date(holiday.start_date),
+                                endDate: new Date(holiday.end_date)
+                            }));
+                            // Show the calendar with holidays marked
+                            showCalendar(month, holidays, year, monthIndex);
+                        })
+                        .catch(error => console.error('Error fetching holidays:', error));
                 });
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching holidays:', error);
+            });
+        });
+        
+        function showCalendar(month, holidays, year, monthIndex) {
+            // Create a new Date object for the selected month and year
+            var selectedMonth = new Date(year, monthIndex);
+            // Get the month name from the selected date
+            var monthName = selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            // Get the number of days in the selected month
+            var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+            // Create an array to hold the days of the week
+            var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            // Create a new HTML string for the calendar
+            var calendarHTML = '<table class="calendar">';
+            // Add the month and year name as the first row above the table
+            calendarHTML += '<tr><th colspan="7" class="month-year">' + monthName + '</th></tr>';
+            // Add the day names as table headers
+            calendarHTML += '<tr>';
+            for (var i = 0; i < daysOfWeek.length; i++) {
+                calendarHTML += '<th>' + daysOfWeek[i].substring(0, 3) + '</th>';
             }
-        });
-    }
-    function showHolidayDetails(holidayId) {
-        // AJAX request to fetch holiday details using the holiday ID
-        $.ajax({
-            url: '/get_holiday_details/',
-            method: 'GET',
-            data: { holiday_id: holidayId },
-            success: function(data) {
-                var holidays = data.holidays;
-                holidays.forEach(function(holiday) {
-                    var holidayDate = new Date(holiday.start_date);
-                    var day = holidayDate.getDate();
-                    var calendarTable = document.querySelector('.calendar'); // Select the calendar table
-                    var calendarTable = document.querySelector('.calendar'); // Select the calendar table
-var cells = calendarTable.getElementsByTagName('td'); // Get all cells in the table
- // Get all cells in the table
-                    for (var i = 0; i < cells.length; i++) {
-                        if (parseInt(cells[i].innerHTML) === day) {
-                            cells[i].classList.add('holiday'); // Add 'holiday' class to mark holiday cells
-                        }
+            calendarHTML += '</tr><tr>';
+            // Calculate the day of the week for the first day of the month
+            var firstDayOfWeek = new Date(year, monthIndex, 1).getDay();
+            // Add empty cells for the days before the first day of the month
+            for (var i = 0; i < firstDayOfWeek; i++) {
+                calendarHTML += '<td></td>';
+            }
+            // Loop through each day of the month
+            for (var i = 1; i <= daysInMonth; i++) {
+                // Check if the current day falls within any holiday range, including the start date
+                var isHoliday = holidays.some(holiday => {
+                    // Check if the current day falls within the holiday range in the start month
+                    if (selectedMonth.getMonth() === holiday.startDate.getMonth()) {
+                        return (new Date(year, monthIndex, i) >= holiday.startDate && new Date(year, monthIndex, i) <= holiday.endDate);
                     }
+                    // Check if the current day falls within the holiday range in the end month
+                    if (selectedMonth.getMonth() === holiday.endDate.getMonth()) {
+                        return (new Date(year, monthIndex + 1, i) >= holiday.startDate && new Date(year, monthIndex + 1, i) <= holiday.endDate);
+                    }
+                    return false;
                 });
-            },
-        });
-    }
+                // Determine the class for styling based on whether it's a holiday or not
+                var cellClass = isHoliday ? 'holiday' : '';
+                // Check if it's the last day of the week
+                if ((firstDayOfWeek + i - 1) % 7 === 0 && i !== 1) {
+                    calendarHTML += '</tr><tr>';
+                }
+                // Add the day number as a cell in the table
+                calendarHTML += '<td class="' + cellClass + '">' + i + '</td>';
+            }
+            // Close the last row and the table
+            calendarHTML += '</tr></table>';
+            // Display the calendar in the calendarContainer div
+            document.getElementById('calendarContainer').innerHTML = calendarHTML;
+        }
     function searchTable() {
-        var input, filter, table, tr, th, td, i, j, txtValue;
+        // Declare variables
+        var input, filter, table, tr, td, i, j, txtValue;
         input = document.getElementById("searchInput");
         filter = input.value.toUpperCase();
         table = document.querySelector(".holiday-table");
         tr = table.getElementsByTagName("tr");
-
-        // Loop through all rows
+    
+        // Loop through all table rows
         for (i = 0; i < tr.length; i++) {
-            th = tr[i].getElementsByTagName("th");
-            if (th.length > 0) {
-                // Skip if the row is a header row
-                continue;
+          // Skip the rows in thead
+          if (tr[i].getElementsByTagName("th").length > 0) {
+            continue;
+          }
+    
+          var found = false;
+    
+          // Loop through all columns in the current row
+          for (j = 0; j < tr[i].cells.length; j++) {
+            td = tr[i].getElementsByTagName("td")[j];
+    
+            if (td) {
+              txtValue = td.textContent || td.innerText;
+    
+              if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                found = true;
+                break;
+              }
             }
-            // Loop through all cells in the current row
-            var found = false;
-            for (j = 0; j < tr[i].cells.length; j++) {
-                td = tr[i].cells[j];
-                if (td) {
-                    txtValue = td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        // If the filter text is found in any cell, set found to true and break the inner loop
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            // If any cell contains the filter text, display the row, otherwise hide it
-            tr[i].style.display = found ? "" : "none";
+          }
+    
+          // Set display based on search result
+          if (found) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
         }
-    }
+      }
+      document.getElementById("searchInput").addEventListener("input", searchTableOnChange);
+      function importData() {
+        var input = document.createElement('input');
+        input.type = 'file';
+    
+        input.onchange = function (e) {
+          var file = e.target.files[0];
+          if (!file) return;
+    
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            var data = new Uint8Array(e.target.result);
+            var workbook = XLSX.read(data, {
+              type: 'array'
+            });
+            var sheetName = workbook.SheetNames[0];
+            var sheet = workbook.Sheets[sheetName];
+            var jsonData = XLSX.utils.sheet_to_json(sheet, {
+              header: 1
+            });
+    
+            // Assuming your table has a specific format, modify this part accordingly
+            // Clear existing table data
+            var tableBody = document.querySelector("table tbody");
+            tableBody.innerHTML = "";
+    
+            // Populate table with imported data
+            for (var i = 0; i < jsonData.length; i++) {
+              var row = jsonData[i];
+              var tr = document.createElement("tr");
+              for (var j = 0; j < row.length; j++) {
+                var td = document.createElement("td");
+                td.textContent = row[j];
+                tr.appendChild(td);
+              }
+              tableBody.appendChild(tr);
+            }
+          };
+    
+          reader.readAsArrayBuffer(file);
+        };
+    
+        input.click();
+      }
     function sortTable(option) {
         var table, rows, switching, i, shouldSwitch;
         table = document.querySelector(".holiday-table");
@@ -486,6 +528,7 @@ var cells = calendarTable.getElementsByTagName('td'); // Get all cells in the ta
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.js"></script>
+
 
 </body>
 </html>
