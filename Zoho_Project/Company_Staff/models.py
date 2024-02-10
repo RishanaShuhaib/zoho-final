@@ -45,10 +45,16 @@ class Godown(models.Model):
     distance = models.IntegerField()
     login_details = models.ForeignKey(LoginDetails, on_delete=models.CASCADE)
     company = models.ForeignKey(CompanyDetails, on_delete=models.CASCADE, related_name='godowns')
+    is_edited = models.BooleanField(default=False)
 class Comment(models.Model):
     comment_text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     godown = models.ForeignKey(Godown, related_name='comments', on_delete=models.CASCADE)
+class Godownhistory(models.Model):
+    company = models.ForeignKey(CompanyDetails, on_delete=models.CASCADE,related_name="history")
+    login_details = models.ForeignKey(LoginDetails, on_delete=models.CASCADE,related_name="history")
+    godown = models.ForeignKey(Godown, on_delete=models.CASCADE,related_name="history")
+    current_date = models.DateField(auto_now_add=True)
 class Holiday(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)

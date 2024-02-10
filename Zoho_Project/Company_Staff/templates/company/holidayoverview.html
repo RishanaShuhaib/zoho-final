@@ -16,6 +16,26 @@
    
 
     <style>
+        .active {
+            border-bottom: 5px solid white !important;
+        }
+        .cust-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 8px 16px;
+            margin: 0 10px;
+            outline: none;
+            width:45%;
+            padding:5px;
+            color:white;
+            text-decoration:none;
+          }
+          
+          .active {
+            border-bottom: 2px solid blue;
+          }
         .calendar {
             width: 100%;
             max-width: 800px; /* Adjust the maximum width as needed */
@@ -38,8 +58,8 @@
             background-color: #f2f2f2;
         }
         .calendar .holiday {
-            background-color: #ffcccc; /* Light red background */
-            color: #f00; /* Red text color */
+            background-color: red;
+            color: white;
             font-weight: bold; /* Bold text for holidays */
         }
         .calendar td {
@@ -61,6 +81,7 @@
             width:50px;
             
         }
+        
         button{
             align:center !important;
             padding-left:auto !important;
@@ -299,12 +320,59 @@
             </div>
             <!-- Right Vertical Container - Godown Details -->
             <div class="flex-item col-md-5 right-container" id="holidayDetails">
+                <div class="button-container">
+                    <button id="button1" class="cust-button"onclick="calendarContainer()">Calender</button>
+                    <button id="button2" class="cust-button"onclick="otherContainer()">Holidays</button>
+                  </div>
+                  
               <div id="calendarContainer"></div>
+              <div id="otherContainer">
+                <div class="modal fade" id="editHolidayModal" tabindex="-1" role="dialog" aria-labelledby="editHolidayModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editHolidayModalLabel">Edit Holiday</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Form for editing holiday details -->
+                                <form id="editHolidayForm">
+                                    <!-- Input fields for holiday details -->
+                                    <div class="form-group">
+                                        <label for="editHolidayName">Holiday Name</label>
+                                        <input type="text" class="form-control" id="editHolidayName" name="editHolidayName">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editStartDate">Start Date</label>
+                                        <input type="date" class="form-control" id="editStartDate" name="editStartDate">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editEndDate">End Date</label>
+                                        <input type="date" class="form-control" id="editEndDate" name="editEndDate">
+                                    </div>
+                                    <!-- Hidden field to store holiday ID -->
+                                    <input type="hidden" id="editHolidayId" name="editHolidayId">
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="saveEditedHoliday()">Save changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                    
+                </div> 
+            </div>
             </div>
           </div>
         </div>
       </div>
       <script>
+        
         document.addEventListener("DOMContentLoaded", function () {
             var rows = document.querySelectorAll("#holidayTable tbody tr");
             rows.forEach(function (row) {
@@ -318,6 +386,104 @@
                         .then(data => {
                             // Extract holiday start and end dates from the response
                             var holidays = data.holidays.map(holiday => ({
+                                holiday_name: holiday.holiday_name,
+                                start_date: holiday.start_date,
+                                end_date: holiday.end_date
+                            }));
+                            // Show the holiday details in the otherContainer table
+                            showHolidayDetails(holidays);
+                        })
+                        .catch(error => console.error('Error fetching holidays:', error));
+                });
+            });
+        });
+        function printHolidayDetails() {
+            var printContents = document.getElementById("otherContainer").innerHTML;
+            var originalContents = document.body.innerHTML;
+        
+            document.body.innerHTML = printContents;
+        
+            window.print();
+        
+            document.body.innerHTML = originalContents;
+        }
+        
+        function showHolidayDetails(holidays) {
+            var otherContainer = document.getElementById("otherContainer");
+            // Clear existing content in otherContainer
+            otherContainer.innerHTML = "";
+        
+            // Create a div to hold the print button and the table
+    var printButtonHTML = '<div>';
+    // Add the print button
+    printButtonHTML += '<button class="btn btn-custom print-button" style="width: 10%;align-items:right;" onclick="printHolidayDetails()">';
+    printButtonHTML += '<i class="fas fa-print"></i> Print</button>';
+    // Add the download button
+    printButtonHTML += '<button class="btn btn-custom download-button" style="width: 20%;align-items:right;" onclick="downloadPDF()">';
+    printButtonHTML += '<i class="fas fa-download"></i> Download PDF</button>';
+    printButtonHTML += '</div>';
+    
+    // Append the buttons to the otherContainer
+    otherContainer.innerHTML = printButtonHTML;
+    
+            // Create a table to display holiday details
+            var tableHTML = '<table class="table" style="color: white;">';
+            tableHTML += '<thead><tr><th>Holiday Name</th><th>Start Date</th><th>End Date</th><th>Actions</th></tr></thead>';
+            tableHTML += '<tbody>';
+        
+            // Populate the table with holiday details
+            holidays.forEach(function (holiday) {
+                tableHTML += '<tr>';
+                tableHTML += '<td>' + holiday.holiday_name + '</td>';
+                tableHTML += '<td>' + holiday.start_date + '</td>';
+                tableHTML += '<td>' + holiday.end_date + '</td>';
+                // Add edit and delete buttons
+                tableHTML += '<td><button onclick="editHoliday(' + holiday.id + ')" class="btn btn-sm btn-primary">Edit</button> <button onclick="deleteHoliday(' + holiday.id + ')" class="btn btn-sm btn-danger">Delete</button></td>';
+                tableHTML += '</tr>';
+            });
+        
+            tableHTML += '</tbody></table>';
+        
+            // Append the table HTML to the otherContainer
+            otherContainer.innerHTML += tableHTML;
+        }
+        function downloadPDF() {
+            var element = document.getElementById('otherContainer');
+            var table = element.querySelector('table');
+            var textNodes = table.querySelectorAll('td, th');
+        
+            // Store the original text color
+            var originalColor = [];
+            textNodes.forEach(function(node) {
+                originalColor.push(node.style.color);
+                // Set the text color to black for PDF generation
+                node.style.color = 'black';
+            });
+        
+            // Generate the PDF
+            html2pdf()
+                .from(element)
+                .save('document.pdf')
+                .then(() => {
+                    // Reset the text color back to white after generating the PDF
+                    textNodes.forEach(function(node, index) {
+                        node.style.color = originalColor[index];
+                    });
+                });
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+            var rows = document.querySelectorAll("#holidayTable tbody tr");
+            rows.forEach(function (row) {
+                row.addEventListener("click", function () {
+                    var month = row.cells[0].innerText;
+                    var year = parseInt(month.split(" ")[1]);
+                    var monthIndex = new Date(Date.parse(month)).getMonth();
+                    // Fetch holidays for the selected month and year
+                    fetch(`/api/holidays/${year}/${monthIndex +1}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Extract holiday start and end dates from the response
+                            var holidays = data.holidays.map(holiday => ({
                                 startDate: new Date(holiday.start_date),
                                 endDate: new Date(holiday.end_date)
                             }));
@@ -325,6 +491,7 @@
                             showCalendar(month, holidays, year, monthIndex);
                         })
                         .catch(error => console.error('Error fetching holidays:', error));
+                        
                 });
             });
         });
@@ -358,16 +525,10 @@
             for (var i = 1; i <= daysInMonth; i++) {
                 // Check if the current day falls within any holiday range, including the start date
                 var isHoliday = holidays.some(holiday => {
-                    // Check if the current day falls within the holiday range in the start month
-                    if (selectedMonth.getMonth() === holiday.startDate.getMonth()) {
-                        return (new Date(year, monthIndex, i) >= holiday.startDate && new Date(year, monthIndex, i) <= holiday.endDate);
-                    }
-                    // Check if the current day falls within the holiday range in the end month
-                    if (selectedMonth.getMonth() === holiday.endDate.getMonth()) {
-                        return (new Date(year, monthIndex + 1, i) >= holiday.startDate && new Date(year, monthIndex + 1, i) <= holiday.endDate);
-                    }
-                    return false;
+                    // Check if the current day falls within the holiday range, including both the start date and end date
+                    return (new Date(year, monthIndex, i+1) >= holiday.startDate && new Date(year, monthIndex, i) <= holiday.endDate);
                 });
+                
                 // Determine the class for styling based on whether it's a holiday or not
                 var cellClass = isHoliday ? 'holiday' : '';
                 // Check if it's the last day of the week
@@ -522,9 +683,39 @@
         // Update event listeners after sorting
         updateEventListeners();
     }
+    $(document).ready(function(){
+        $(".cust-button").click(function(){
+            $(".cust-button").removeClass("active");
+            $(this).addClass("active");
+    
+            if ($(this).attr('id') === 'button1') {
+                showCalendarContainer();
+            } else {
+                showOtherContainer();
+            }
+        });
+    
+        // Trigger click event on Button 1 initially to show the calendar container
+        $("#button1").click();
+    });
+    
+    function calendarContainer() {
+        $("#calendarContainer").show();
+        $("#otherContainer").hide();
+        $("#button1").addClass("active");
+        $("#button2").removeClass("active");
+    }
+    
+    function otherContainer() {
+        $("#otherContainer").show();
+        $("#calendarContainer").hide();
+        $("#button2").addClass("active");
+        $("#button1").removeClass("active");
+    }
+    
     
 </script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.js"></script>

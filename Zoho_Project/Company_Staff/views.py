@@ -5,6 +5,7 @@ from Register_Login.views import logout
 from django.contrib import messages
 from django.conf import settings
 import json
+from django.utils.timezone import now
 from django import template
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -485,7 +486,7 @@ def edit_godown(request):
         godown.godown_address = request.POST.get('editedGodownAddress')
         godown.stock_keeping = request.POST.get('editedGodownStockKeeping')
         godown.distance = request.POST.get('editedGodownDistance')
-
+        godown.is_edited = True
         godown.save()
         messages.success(request, 'Godown details updated successfully.')
         return redirect('edit_page', godown_id=godown_id)
@@ -646,8 +647,23 @@ def delete_comment(request, comment_id):
         return JsonResponse({'message': 'Comment deleted successfully'})
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
-def history_page(request):
-    return render(request,'company/godownhistory.html')
+def get_godown_history(request):
+    if 'login_id' in request.session:
+        login_id = request.session['login_id']
+        try:
+            log_details = LoginDetails.objects.get(id=login_id)
+            company_details = log_details.companydetails_set.first()
+
+            godown_id = request.GET.get('godown_id')  # Retrieve godown_id from the request
+            if godown_id:
+                godown = get_object_or_404(Godown, id=godown_id)
+                current_date = now().date()  # Fetch the current date
+                return render(request, 'company/godownhistory.html', {'godown': godown, 'current_date': current_date})
+            else:
+                return JsonResponse({'error': 'Godown ID is required'}, status=400)
+        except LoginDetails.DoesNotExist:
+            return JsonResponse({'error': 'Login details not found'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 def holiday_overview(request):
     if 'login_id' in request.session:
         login_id = request.session['login_id']
@@ -700,13 +716,39 @@ def holiday_overview(request):
 
                     current_month = (current_month + timedelta(days=32 - current_month.day)).replace(day=1)
 
-            context = {'cumulative_counts': cumulative_counts}
+            context = {'cumulative_counts': cumulative_counts,'holidays': holidays}
             return render(request, 'company/holidayoverview.html', context)
 
         except (LoginDetails.DoesNotExist, CompanyDetails.DoesNotExist):
             return HttpResponse("Login details or company details not found.")
     else:
         return redirect('/')
+def edit_holiday(request):
+    if request.method == 'POST':
+        # Retrieve edited holiday details from POST request
+        holiday_id = request.POST.get('holidayId')
+        holiday_name = request.POST.get('holidayName')
+        start_date = request.POST.get('startDate')
+        end_date = request.POST.get('endDate')
+
+        # Update holiday object in the database
+        try:
+            holiday = Holiday.objects.get(id=holiday_id)
+            holiday.holiday_name = holiday_name
+            holiday.start_date = start_date
+            holiday.end_date = end_date
+            holiday.save()
+            return JsonResponse({'success': True})
+        except Holiday.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Holiday not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+def holiday_details_endpoint(request):
+    holidays = Holiday.objects.all()  # Assuming Holiday is the model for your holidays
+    holiday_data = [{'holiday_name': holiday.holiday_name,
+                     'start_date': holiday.start_date,
+                     'end_date': holiday.end_date} for holiday in holidays]
+    return JsonResponse(holiday_data, safe=False)
 def get_holidays_api(request, year, month):
     # Fetch holidays from the database for the given year and month
     holidays = Holiday.objects.filter(start_date__year=year, start_date__month=month)
