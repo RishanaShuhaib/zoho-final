@@ -770,7 +770,7 @@ def get_comments(request):
         month_year = request.GET.get('month_year')
         month, year = map(int, month_year.split('-'))
         comments = CommentHoliday.objects.filter(holidaymonth=f"{year}-{month}")
-        return render(request, "company/viewcommentholiday.html", {'comments': comments})
+        return render(request, "company/holidayoverview.html", {'comments': comments})
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
