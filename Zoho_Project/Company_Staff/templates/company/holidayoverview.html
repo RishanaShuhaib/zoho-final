@@ -1,21 +1,44 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
-<head><script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<head>
+   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-  
-  
-    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Page Title</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.js" defer></script>
-   
+    <title>FullCalendar Example</title>
+    {% load static %} <!-- Load staticfiles template tags -->
+    <!-- Include FullCalendar CSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 
+    <link href="{% static 'fullcalendar/packages/core/main.css' %}" rel="stylesheet">
+    <link href="{% static 'fullcalendar/packages//daygrid/main.css' %}" rel="stylesheet">
+    <!-- Include FullCalendar JavaScript -->
+    <script src="{% static 'fullcalendar/packages/core/index.global.js' %}" defer></script>
+    <script src="{% static 'fullcalendar/packages/core/index.global.min.js' %}" defer></script>
+    <script src="{% static 'fullcalendar/packages/core/locales-all.global.js' %}" defer></script>
+    <script src="{% static 'fullcalendar/packages/core/locales-all.global.min.js' %}" defer></script>
+    <script src="{% static 'fullcalendar/packages/daygrid/index.global.js' %}" defer></script>
+    <script src="{% static 'fullcalendar/packages/daygrid/index.global.min.js' %}" defer></script>
+    <script src="{% static 'fullcalendar/packages/interaction/index.global.js' %}" defer></script>
+    <script src="{% static 'fullcalendar/packages/interaction/index.global.min.js' %}" defer></script>
+    <!-- Your custom JavaScript code -->
+    <script src="{% static 'js/calendar.js' %}" defer></script>
     <style>
+        .fc, .fc th, .fc td, .fc-event-title {
+            color: white !important;
+        }
+        .cust-button.active {
+            border-bottom: 2px solid white;
+        }
         .active {
             border-bottom: 5px solid white !important;
         }
@@ -38,7 +61,7 @@
           }
         .calendar {
             width: 100%;
-            max-width: 800px; /* Adjust the maximum width as needed */
+            max-width: 800px; 
             margin: 0 ;
             border-collapse: collapse;
             font-family: Arial, sans-serif;
@@ -60,21 +83,19 @@
         .calendar .holiday {
             background-color: red;
             color: white;
-            font-weight: bold; /* Bold text for holidays */
+            font-weight: bold;
         }
         .calendar td {
-            height: 80px; /* Adjust cell height as needed */
+            height: 80px;
         }
-
-
         .month-year {
             font-size: 18px;
             text-align: center;
             margin-bottom: 10px;
         }
-        .btn-custom { /* Set the minimum width to ensure all buttons have the same width */
-            height: auto; /* Allow the height to adjust based on content */
-            text-align: center; /* Center the text horizontally within the button */
+        .btn-custom { 
+            height: auto; 
+            text-align: center;
             padding-left:0 !important;
             padding-right:0 !important;
             align:center;
@@ -95,35 +116,34 @@
         .flex-container {
             display: flex;
             height: 100vh;
-            flex-direction: column; /* Change to column layout on small screens */
+            flex-direction: column;
         }
     
         .flex-item {
-            flex: 1 3; /* Adjust the values as needed (flex-grow flex-shrink) */
+            flex: 1 3;
             padding: 2px;
             border-right: 1px solid #ccc;
         }
         #holidayList {
-            width: 30%; /* Adjust the percentage as needed */
+            width: 30%;
         }
         #holidayDetails{
             width:70%;
         }
         #holidayList {
-            flex: 1; /* Adjust the flex value as needed */
+            flex: 1; 
         }
         
         #holidayDetails {
-            flex: 2; /* Adjust the flex value as needed */
+            flex: 2; 
         }
-        
-        /* Media query for smaller screens */
+    
         @media screen and (max-width: 992px) {
             #holidayList {
-                width: 100%; /* Full width on smaller screens */
+                width: 100%; 
             }
             #holidayDetails {
-                width: 100%; /* Full width on smaller screens */
+                width: 100%; 
             }
         }
         .holiday-list {
@@ -148,31 +168,27 @@
             margin-bottom: 10px;
             padding: 10px;
         }
-    
-        /* Updated style for the right vertical container */
         .right-container {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
         }
-    
-        /* Added style for the container holding both flex items in a row */
         .flex-row {
             display: flex;
-            flex: 1; /* Allow the flex items to grow and fill the available space */
+            flex: 1;
         }
     
         .holiday-card {
             border: 1px solid #ccc;
             margin-bottom: 10px;
             padding: 10px;
-            font-size: 15px; /* Adjust the font size as needed */
+            font-size: 15px; 
         }
     
         .holiday-table {
             width: 100% !important;
             border-collapse: collapse !important;
-            margin-top: 20px !important; /* Adjust the margin as needed */
+            margin-top: 20px !important; 
         }
         .holiday-table td{
             color:white !important;
@@ -184,7 +200,7 @@
         }
     
         .holiday-table th {
-            background-color: #f5f5f5 !important; /* Header background color */
+            background-color: #f5f5f5 !important; 
             color: black !important;
         }
     
@@ -203,20 +219,18 @@
         body {
             color: white;
         }
-    
-        /* Media query for small screens */
         @media screen and (max-width: 992px) {
             .flex-container {
-                flex-direction: column; /* Switch to column layout on small screens */
+                flex-direction: column;
             }
         
             .flex-item {
                 flex: 1;
-                border-right: none; /* Remove border on small screens */
+                border-right: none; 
             }
         
             .right-container {
-                flex: 1; /* Allow the right container to take full width on small screens */
+                flex: 1;
             }
             
             
@@ -225,16 +239,11 @@
                 text-align: left;
             }
         }
-
-        /* Adjust the width of the left flex container for larger screens */
         @media screen and (min-width: 993px) {
             #holidayList {
-                width: 30%; /* Adjust the percentage as needed */
+                width: 30%; 
             }
         }
-        
-        /* Adjust the styles for the buttons in the left flex container */
-        
         
         .btn-custom {
             background: none !important;
@@ -250,202 +259,429 @@
             background: orange !important;
             color: white !important;
         }
-        
+
     </style>
 </head>
 <body>
     <div class="body-wrapper">
-    <div class="container-fluid">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb" style=" color: orange !important;">
-            <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'show_holidays' %}" class="text-warning-emphasis">All Holidays </a></li>
-            <li class="breadcrumb-item" aria-current="page">Holiday Overview</li>
-        </ol>
-    <!-- Container holding both flex items in a row -->
-    <div class="flex-row">
-
-        <!-- Left Vertical Container - Godown List -->
-        <div class="flex-item col-md-3mm " id="holidayList">
-            
-            <h2 style="color:white;">Holiday List</h2>
-            <div class="container">
-                <div class="row mr-0  ">
-                    <!-- Search input and button -->
-                    <div class="col-md-6 mb-1 mb-md-0" >
-                        <div class="d-flex align-items-center mr-2">
-                            <input type="text" id="searchInput" oninput="searchTable()" placeholder="Search Here..." class="mr-2 form-control" style="width: 130px;">
+        <div class="container-fluid">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb" style=" color: orange !important;">
+                <li class="breadcrumb-item"><a href="{% url 'company_dashboard' %}" class="text-warning-emphasis">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'show_holidays' %}" class="text-warning-emphasis">All Holidays </a></li>
+                <li class="breadcrumb-item" aria-current="page">Holiday Overview</li>
+            </ol>
+        <div class="flex-row">
+    
+            <div class="flex-item col-md-3mm " id="holidayList">
+                
+                <h2 style="color:white;">Holiday List</h2>
+                <div class="container">
+                    <div class="row mr-0  ">
+                        <div class="col-md-6 mb-1 mb-md-0" >
+                            <div class="d-flex align-items-center mr-2">
+                                <input type="text" id="searchInput" oninput="searchTable()" placeholder="Search Here..." class="mr-2 form-control" style="width: 130px;">
+                            </div>
+                        </div>
+    
+                        <!-- sort dropdown -->
+                        <div class="col-md-2 mb-1 mb-md-0">
+                            <div class="input-group mr-3">
+                                <div class="input-group-prepend">
+                                  <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Sort</button>
+                                  <div class="dropdown-menu" style="color:white;">
+                                    <a class="dropdown-item" id="sortAll" href="#" onclick="sortTable('All')">All</a>
+                                    <a class="dropdown-item" id="sortMonth" href="#" onclick="sortTable('Month')">Month</a>
+                                    <a class="dropdown-item" id="sortYear" href="#" onclick="sortTable('Year')">Year</a>
+                                  </div>
+                                </div>
+                              </div>
+                        </div>
+                    
+                        <!-- New button -->
+                        <div class="col-md-1 mb-1 mb-md-0">
+                            <a href="{% url 'add_holiday' %}" class="btn btn-custom">
+                                <i class="fas fa-plus"></i>
+                            </a>
                         </div>
                     </div>
-
-                    <!-- sort dropdown -->
-                    <div class="col-md-2 mb-1 mb-md-0">
-                        <div class="input-group mr-3">
-                            <div class="input-group-prepend">
-                              <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Sort</button>
-                              <div class="dropdown-menu" style="color:white;">
-                                <a class="dropdown-item" id="sortAll" href="#" onclick="sortTable('All')">All</a>
-                                <a class="dropdown-item" id="sortMonth" href="#" onclick="sortTable('Month')">Month</a>
-                                <a class="dropdown-item" id="sortYear" href="#" onclick="sortTable('Year')">Year</a>
-                              </div>
-                            </div>
-                          </div>
-                    </div>
-                
-                    <!-- New button -->
-                    <div class="col-md-1 mb-1 mb-md-0">
-                        <a href="{% url 'add_holiday' %}" class="btn btn-custom">
-                            <i class="fas fa-plus"></i>
-                        </a>
-                    </div>
                 </div>
-            </div>
-            <table id="holidayTable" class="holiday-table">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Total Holidays</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for key, value in cumulative_counts.items %}
-                  <tr data-holiday="{{ value.holidays }}">
-                    <td>{{ value.start_month|date:"F Y" }}</td>
-                    <td>{{ value.holidays }}</td>
-                    <input type="hidden" id="holidayId_{{ value.holiday_id }}" value="{{ value.holiday_id }}">
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-            <!-- Right Vertical Container - Godown Details -->
-            <div class="flex-item col-md-5 right-container" id="holidayDetails">
-                <div class="button-container">
-                    <button id="button1" class="cust-button"onclick="calendarContainer()">Calender</button>
-                    <button id="button2" class="cust-button"onclick="otherContainer()">Holidays</button>
-                  </div>
-                  
-              <div id="calendarContainer"></div>
-              <div id="otherContainer">
-                <div class="modal fade" id="editHolidayModal" tabindex="-1" role="dialog" aria-labelledby="editHolidayModalLabel" aria-hidden="true">
+                <table id="holidayTable" class="holiday-table">
+                    <thead>
+                      <tr>
+                        <th>Month</th>
+                        <th>Total Holidays</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for key, value in cumulative_counts.items %}
+                      <tr  data-month-year="{{ value.start_month|date:'m-Y' }}"> <!-- Add data-holiday-id attribute -->
+                      <td>{{ value.start_month|date:"F Y" }}</td>
+                      <td>{{ value.holidays }}</td>
+                      <input type="hidden" id="holidayId_{{ value.holiday_id }}" value="{{ value.holiday_id }}">
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="flex-item col-md-5 right-container" id="holidayDetails"style="color:white;">
+                    <div class="button-container">
+                        <button id="button1" class="cust-button active"onclick="calendar()">Calender</button>
+                        <button id="button2" class="cust-button"onclick="otherContainer()">Holidays</button>
+                      </div>
+                      
+                      <div id='calendar'></div>
+                  <div id="otherContainer"></div>
+                </div>
+                <div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="historyModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editHolidayModalLabel">Edit Holiday</h5>
+                            <div class="modal-header"style="background:black;color:white!important;">
+                                <h5 class="modal-title" id="historyModalLabel">History</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
+                            <div class="modal-body"style="background:black;color:white!important;">
+                                <!-- History data will be loaded here using AJAX -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal" id="addCommentModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content"style="background:black;color:white;">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Add Comment</h5>
+                                <button type="button" class="close">&times;</button>
+                            </div>
                             <div class="modal-body">
-                                <!-- Form for editing holiday details -->
-                                <form id="editHolidayForm">
-                                    <!-- Input fields for holiday details -->
+                                <form method="post" action="{% url 'add_commentholiday'  %}" id="addCommentForm">
+                                    {% csrf_token %}
                                     <div class="form-group">
-                                        <label for="editHolidayName">Holiday Name</label>
-                                        <input type="text" class="form-control" id="editHolidayName" name="editHolidayName">
+                                        <input type="hidden" id="holiday_id" name="holiday_id">
+                                        <input type="hidden" id="monthYearInput" name="month_year"> 
+                                        <label for="comment">Comment:</label>
+                                        <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="editStartDate">Start Date</label>
-                                        <input type="date" class="form-control" id="editStartDate" name="editStartDate">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="editEndDate">End Date</label>
-                                        <input type="date" class="form-control" id="editEndDate" name="editEndDate">
-                                    </div>
-                                    <!-- Hidden field to store holiday ID -->
-                                    <input type="hidden" id="editHolidayId" name="editHolidayId">
+                                    <input type="hidden" id="holiday_id" name="holiday_id">
+                                    <button type="submit" class="btn btn-primary">Submit</button>
                                 </form>
                             </div>
                             <div class="modal-footer">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal" id="viewCommentModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content"style="background:black;color:white;">
+                            <div class="modal-header">
+                                <h5 class="modal-title"> Comments</h5>
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+                            
+                            <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-primary" onclick="saveEditedHoliday()">Save changes</button>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                    
-                </div> 
-            </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <script>
+    
+</body>
+    <script>
+            function showHistoryModal(holidayId) {
+                // Make an AJAX request to fetch holiday history
+                $.ajax({
+                    url: "{% url 'get_holiday_history' %}",
+                    method: 'GET',
+                    data: { holiday_id: holidayId },
+                    success: function(response) {
+                        // Update the modal body with fetched history
+                        $('#historyModal .modal-body').html(response);
+                        // Show the modal
+                        $('#historyModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching history:', error);
+                    }
+                });
+            }
         
-        document.addEventListener("DOMContentLoaded", function () {
-            var rows = document.querySelectorAll("#holidayTable tbody tr");
-            rows.forEach(function (row) {
-                row.addEventListener("click", function () {
-                    var month = row.cells[0].innerText;
-                    var year = parseInt(month.split(" ")[1]);
-                    var monthIndex = new Date(Date.parse(month)).getMonth();
-                    // Fetch holidays for the selected month and year
-                    fetch(`/api/holidays/${year}/${monthIndex + 1}/`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Extract holiday start and end dates from the response
-                            var holidays = data.holidays.map(holiday => ({
-                                holiday_name: holiday.holiday_name,
-                                start_date: holiday.start_date,
-                                end_date: holiday.end_date
-                            }));
-                            // Show the holiday details in the otherContainer table
-                            showHolidayDetails(holidays);
-                        })
-                        .catch(error => console.error('Error fetching holidays:', error));
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                headerToolbar: {
+                    left: 'prev, today',
+                    center: 'title',
+                    right: 'next'
+                },
+                initialView: 'dayGridMonth',
+                showNonCurrentDates: false,
+                events: [
+                    // Iterate over holidays and format events
+                    {% for holiday in holidays %}
+                    {
+                        title: '{{ holiday.holiday_name }}',
+                        start: '{{ holiday.start_date|date:"Y-m-d" }}',
+                        end: '{% if holiday.start_date != holiday.end_date %}{{ holiday.end_date|date:"Y-m-d" }}{% endif %}',
+                        backgroundColor: 'red'
+                    },
+                    // Mark the end date as a separate event if it's different from the start date
+                    {% if holiday.start_date != holiday.end_date %}
+                    {
+                        title: '{{ holiday.holiday_name }}',
+                        start: '{{ holiday.end_date|date:"Y-m-d" }}',
+                        end: '{{ holiday.end_date|date:"Y-m-d" }}',
+                        backgroundColor: 'red'
+                    },
+                    {% endif %}
+                    {% endfor %}
+                ],
+                eventClick: function(info) {
+                    alert('Event: ' + info.event.title);
+                },
+                
+            });
+        
+            // Render the calendar
+            calendar.render();
+        
+            // Function to handle row click
+            function handleRowClick(row) {
+                var monthYear = row.dataset.monthYear;
+                var [month, year] = monthYear.split('-');
+                // Go to the clicked month in the calendar
+                calendar.gotoDate(year + '-' + month + '-01');
+                // Update otherContainer with selected month and year
+                otherContainer(calendar.getDate());
+            }
+        
+            // Add event listener to table rows
+            var rows = document.querySelectorAll('#holidayTable tbody tr');
+            rows.forEach(function(row) {
+                row.addEventListener('click', function() {
+                    handleRowClick(this);
                 });
             });
-        });
-        function printHolidayDetails() {
-            var printContents = document.getElementById("otherContainer").innerHTML;
-            var originalContents = document.body.innerHTML;
         
-            document.body.innerHTML = printContents;
-        
-            window.print();
-        
-            document.body.innerHTML = originalContents;
-        }
-        
-        function showHolidayDetails(holidays) {
-            var otherContainer = document.getElementById("otherContainer");
-            // Clear existing content in otherContainer
-            otherContainer.innerHTML = "";
-        
-            // Create a div to hold the print button and the table
-    var printButtonHTML = '<div>';
-    // Add the print button
-    printButtonHTML += '<button class="btn btn-custom print-button" style="width: 10%;align-items:right;" onclick="printHolidayDetails()">';
-    printButtonHTML += '<i class="fas fa-print"></i> Print</button>';
-    // Add the download button
-    printButtonHTML += '<button class="btn btn-custom download-button" style="width: 20%;align-items:right;" onclick="downloadPDF()">';
-    printButtonHTML += '<i class="fas fa-download"></i> Download PDF</button>';
-    printButtonHTML += '</div>';
-    
-    // Append the buttons to the otherContainer
-    otherContainer.innerHTML = printButtonHTML;
-    
-            // Create a table to display holiday details
-            var tableHTML = '<table class="table" style="color: white;">';
-            tableHTML += '<thead><tr><th>Holiday Name</th><th>Start Date</th><th>End Date</th><th>Actions</th></tr></thead>';
-            tableHTML += '<tbody>';
-        
-            // Populate the table with holiday details
-            holidays.forEach(function (holiday) {
-                tableHTML += '<tr>';
-                tableHTML += '<td>' + holiday.holiday_name + '</td>';
-                tableHTML += '<td>' + holiday.start_date + '</td>';
-                tableHTML += '<td>' + holiday.end_date + '</td>';
-                // Add edit and delete buttons
-                tableHTML += '<td><button onclick="editHoliday(' + holiday.id + ')" class="btn btn-sm btn-primary">Edit</button> <button onclick="deleteHoliday(' + holiday.id + ')" class="btn btn-sm btn-danger">Delete</button></td>';
-                tableHTML += '</tr>';
+            // Add event listener to button 2 to toggle between calendar and table
+            document.getElementById('button2').addEventListener('click', function() {
+                var calendarDiv = document.getElementById('calendar');
+                var tableDiv = document.getElementById('otherContainer');
+                if (tableDiv.style.display === 'none' || tableDiv.style.display === '') {
+                    // Show the table and hide the calendar
+                    tableDiv.style.display = 'block';
+                    calendarDiv.style.display = 'none';
+                    // Update otherContainer with current calendar date
+                    otherContainer(calendar.getDate());
+                } else {
+                    // Show the calendar and hide the table
+                    tableDiv.style.display = 'none';
+                    calendarDiv.style.display = 'block';
+                    // Go to the currently displayed month in the calendar
+                    calendar.gotoDate(calendar.getDate());
+                }
+                // Remove active class from all buttons and add it to the clicked button
+                document.querySelectorAll('.cust-button').forEach(button => {
+                    button.classList.remove('active');
+                });
+                this.classList.add('active');
             });
         
-            tableHTML += '</tbody></table>';
+            // Function to show the calendar when button 1 is clicked
+            document.getElementById('button1').addEventListener('click', function() {
+                var calendarDiv = document.getElementById('calendar');
+                var tableDiv = document.getElementById('otherContainer');
+                // Show the calendar and hide the table
+                calendarDiv.style.display = 'block';
+                tableDiv.style.display = 'none';
+                // Go to the currently displayed month in the calendar
+                calendar.gotoDate(calendar.getDate());
+                // Remove active class from all buttons and add it to the clicked button
+                document.querySelectorAll('.cust-button').forEach(button => {
+                    button.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
         
-            // Append the table HTML to the otherContainer
-            otherContainer.innerHTML += tableHTML;
+            // Add event listener to trigger otherContainer function when a cell in the #holidayTable is clicked
+            document.getElementById('holidayTable').addEventListener('click', function(event) {
+                if (event.target.tagName === 'TD') {
+                    handleRowClick(event.target.parentNode);
+                }
+            });
+        
+            // Initially open calendar container
+            var tableDiv = document.getElementById('otherContainer');
+            tableDiv.style.display = 'none';
+        
+            // Initially populate otherContainer with details of current display month in calendar
+            otherContainer(calendar.getDate());
+        });
+        
+        function otherContainer(date) {
+            var tableDiv = document.getElementById('otherContainer');
+            var currentMonth = date.getMonth() + 1;
+            var currentYear = date.getFullYear();
+            var divHTML = `
+    <div>
+        <button class="btn btn-custom" onclick="downloadPDF()" style="width:auto;padding:10px;margin:5px;">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+        <button class="btn btn-custom" onclick="printHolidayDetails()" style="width:auto;padding:10px;">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <div class="dropdown">
+            <button class="btn btn-custom dropdown-toggle" type="button" style="width: 20px !important;padding: 10px;" data-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-comment"></i>
+            </button>
+            <div class="dropdown-menu" style="color: white;">
+                <a class="dropdown-item" data-toggle="modal" data-target="#addCommentModal">
+                    <i class="fas fa-comment"></i> Add Comment
+                </a>
+                <a class="dropdown-item" data-toggle="modal" data-target="#viewCommentModal">
+                    <i class="fas fa-comments"></i> View Comments
+                </a>
+            </div>
+        </div>
+    </div>`;
+
+            var tableHTML = '<table class="table" style="color:white !important;">';
+            tableHTML += '<thead><tr><th>Start Date</th><th>End Date</th><th>Holiday Name</th><th>History</th><th>Action</th></tr></thead>';
+            tableHTML += '<tbody>';
+        
+            // Iterate over holidays to populate table rows based on the selected month and year
+            {% for holiday in holidays %}
+                // Parse the holiday start date
+                var holidayStartDate = '{{ holiday.start_date|date:"Y-m" }}';
+                var holidayStartMonth = holidayStartDate.split('-')[1];
+                var holidayStartYear = holidayStartDate.split('-')[0];
+        
+                // Check if the holiday matches the selected month and year
+                if (parseInt(currentMonth) === parseInt(holidayStartMonth) && parseInt(currentYear) === parseInt(holidayStartYear)) {
+                    // Add the holiday to the table
+                    tableHTML += '<tr>';
+                    tableHTML += '<td>{{ holiday.start_date|date:"Y-m-d" }}</td>';
+                    tableHTML += '<td>{{ holiday.end_date|date:"Y-m-d" }}</td>';
+                    tableHTML += '<td>{{ holiday.holiday_name }}</td>';
+                    tableHTML += `<td><button onclick="showHistoryModal('{{ holiday.id }}')" class="btn btn-sm btn-custom">View</button></td>`;
+                    tableHTML += '<td>';
+                    tableHTML += '<a href="{% url 'edit_holidaypage' holiday.id %}" class="btn btn-sm btn-primary">Edit</a>';
+                    tableHTML += '<a href="{% url 'delete_holiday' holiday.id %}" class="btn btn-sm btn-danger">Delete</a>';
+                    tableHTML += '</td>';
+                    tableHTML += '</tr>';
+                }
+            {% endfor %}
+        
+            tableHTML += '</tbody></table>';
+            // Concatenate divHTML and tableHTML
+            var contentHTML = divHTML + tableHTML;
+            // Set the innerHTML of the tableDiv
+            tableDiv.innerHTML = contentHTML;
+            document.getElementById('monthYearInput').value = currentMonth + '-' + currentYear;
+        }
+        
+        function searchTable() {
+            // Declare variables
+            var input, filter, table, tr, td, i, j, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.querySelector(".holiday-table");
+            tr = table.getElementsByTagName("tr");
+        
+            // Loop through all table rows
+            for (i = 0; i < tr.length; i++) {
+              // Skip the rows in thead
+              if (tr[i].getElementsByTagName("th").length > 0) {
+                continue;
+              }
+        
+              var found = false;
+        
+              // Loop through all columns in the current row
+              for (j = 0; j < tr[i].cells.length; j++) {
+                td = tr[i].getElementsByTagName("td")[j];
+        
+                if (td) {
+                  txtValue = td.textContent || td.innerText;
+        
+                  if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                  }
+                }
+              }
+        
+              // Set display based on search result
+              if (found) {
+                tr[i].style.display = "";
+              } else {
+                tr[i].style.display = "none";
+              }
+            }
+          }
+          document.getElementById("searchInput").addEventListener("input", searchTableOnChange);
+          
+        function sortTable(option) {
+            var table, rows, switching, i, shouldSwitch;
+            table = document.querySelector(".holiday-table");
+            switching = true;
+        
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+        
+                // Loop through all table rows (except the header)
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+        
+                    // Get the two elements to compare
+                    var x = rows[i].getElementsByTagName("td")[0]; // Assuming the first column contains the month
+                    var y = rows[i + 1].getElementsByTagName("td")[0];
+        
+                    // Check if the two rows should switch place based on the selected option
+                    if (option === "Month") {
+                        // Get the month names
+                        var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                        var indexX = months.indexOf(x.innerHTML.split(" ")[0]);
+                        var indexY = months.indexOf(y.innerHTML.split(" ")[0]);
+                        if (indexX > indexY) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (option === "Year") {
+                        var currentYear = parseInt(x.innerHTML.split(" ")[1]);
+                        var nextYear = parseInt(y.innerHTML.split(" ")[1]);
+                        if (currentYear > nextYear) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+        
+                if (option === "All") {
+                    if (currentSortColumn !== "All") {
+                        // Restore the original order of rows
+                        var originalOrder = Array.from(rows).slice(1, -1); // Exclude header and footer rows
+                        originalOrder.forEach(row => table.appendChild(row));
+                        currentSortColumn = "All"; // Update the current sort column
+                    }
+                    return; // Exit the function since sorting is not needed
+                }
+        
+                if (shouldSwitch) {
+                    // If a switch was needed, perform the switch and mark that a switch has been done
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        
+            // Update event listeners after sorting
+            updateEventListeners();
         }
         function downloadPDF() {
             var element = document.getElementById('otherContainer');
@@ -471,256 +707,20 @@
                     });
                 });
         }
-        document.addEventListener("DOMContentLoaded", function () {
-            var rows = document.querySelectorAll("#holidayTable tbody tr");
-            rows.forEach(function (row) {
-                row.addEventListener("click", function () {
-                    var month = row.cells[0].innerText;
-                    var year = parseInt(month.split(" ")[1]);
-                    var monthIndex = new Date(Date.parse(month)).getMonth();
-                    // Fetch holidays for the selected month and year
-                    fetch(`/api/holidays/${year}/${monthIndex +1}/`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Extract holiday start and end dates from the response
-                            var holidays = data.holidays.map(holiday => ({
-                                startDate: new Date(holiday.start_date),
-                                endDate: new Date(holiday.end_date)
-                            }));
-                            // Show the calendar with holidays marked
-                            showCalendar(month, holidays, year, monthIndex);
-                        })
-                        .catch(error => console.error('Error fetching holidays:', error));
-                        
-                });
-            });
-        });
+        function printHolidayDetails() {
+            var printContents = document.getElementById("otherContainer").innerHTML;
+            var originalContents = document.body.innerHTML;
         
-        function showCalendar(month, holidays, year, monthIndex) {
-            // Create a new Date object for the selected month and year
-            var selectedMonth = new Date(year, monthIndex);
-            // Get the month name from the selected date
-            var monthName = selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-            // Get the number of days in the selected month
-            var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-            // Create an array to hold the days of the week
-            var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            // Create a new HTML string for the calendar
-            var calendarHTML = '<table class="calendar">';
-            // Add the month and year name as the first row above the table
-            calendarHTML += '<tr><th colspan="7" class="month-year">' + monthName + '</th></tr>';
-            // Add the day names as table headers
-            calendarHTML += '<tr>';
-            for (var i = 0; i < daysOfWeek.length; i++) {
-                calendarHTML += '<th>' + daysOfWeek[i].substring(0, 3) + '</th>';
-            }
-            calendarHTML += '</tr><tr>';
-            // Calculate the day of the week for the first day of the month
-            var firstDayOfWeek = new Date(year, monthIndex, 1).getDay();
-            // Add empty cells for the days before the first day of the month
-            for (var i = 0; i < firstDayOfWeek; i++) {
-                calendarHTML += '<td></td>';
-            }
-            // Loop through each day of the month
-            for (var i = 1; i <= daysInMonth; i++) {
-                // Check if the current day falls within any holiday range, including the start date
-                var isHoliday = holidays.some(holiday => {
-                    // Check if the current day falls within the holiday range, including both the start date and end date
-                    return (new Date(year, monthIndex, i+1) >= holiday.startDate && new Date(year, monthIndex, i) <= holiday.endDate);
-                });
-                
-                // Determine the class for styling based on whether it's a holiday or not
-                var cellClass = isHoliday ? 'holiday' : '';
-                // Check if it's the last day of the week
-                if ((firstDayOfWeek + i - 1) % 7 === 0 && i !== 1) {
-                    calendarHTML += '</tr><tr>';
-                }
-                // Add the day number as a cell in the table
-                calendarHTML += '<td class="' + cellClass + '">' + i + '</td>';
-            }
-            // Close the last row and the table
-            calendarHTML += '</tr></table>';
-            // Display the calendar in the calendarContainer div
-            document.getElementById('calendarContainer').innerHTML = calendarHTML;
+            document.body.innerHTML = printContents;
+        
+            window.print();
+        
+            document.body.innerHTML = originalContents;
         }
-    function searchTable() {
-        // Declare variables
-        var input, filter, table, tr, td, i, j, txtValue;
-        input = document.getElementById("searchInput");
-        filter = input.value.toUpperCase();
-        table = document.querySelector(".holiday-table");
-        tr = table.getElementsByTagName("tr");
-    
-        // Loop through all table rows
-        for (i = 0; i < tr.length; i++) {
-          // Skip the rows in thead
-          if (tr[i].getElementsByTagName("th").length > 0) {
-            continue;
-          }
-    
-          var found = false;
-    
-          // Loop through all columns in the current row
-          for (j = 0; j < tr[i].cells.length; j++) {
-            td = tr[i].getElementsByTagName("td")[j];
-    
-            if (td) {
-              txtValue = td.textContent || td.innerText;
-    
-              if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                found = true;
-                break;
-              }
-            }
-          }
-    
-          // Set display based on search result
-          if (found) {
-            tr[i].style.display = "";
-          } else {
-            tr[i].style.display = "none";
-          }
-        }
-      }
-      document.getElementById("searchInput").addEventListener("input", searchTableOnChange);
-      function importData() {
-        var input = document.createElement('input');
-        input.type = 'file';
-    
-        input.onchange = function (e) {
-          var file = e.target.files[0];
-          if (!file) return;
-    
-          var reader = new FileReader();
-          reader.onload = function (e) {
-            var data = new Uint8Array(e.target.result);
-            var workbook = XLSX.read(data, {
-              type: 'array'
-            });
-            var sheetName = workbook.SheetNames[0];
-            var sheet = workbook.Sheets[sheetName];
-            var jsonData = XLSX.utils.sheet_to_json(sheet, {
-              header: 1
-            });
-    
-            // Assuming your table has a specific format, modify this part accordingly
-            // Clear existing table data
-            var tableBody = document.querySelector("table tbody");
-            tableBody.innerHTML = "";
-    
-            // Populate table with imported data
-            for (var i = 0; i < jsonData.length; i++) {
-              var row = jsonData[i];
-              var tr = document.createElement("tr");
-              for (var j = 0; j < row.length; j++) {
-                var td = document.createElement("td");
-                td.textContent = row[j];
-                tr.appendChild(td);
-              }
-              tableBody.appendChild(tr);
-            }
-          };
-    
-          reader.readAsArrayBuffer(file);
-        };
-    
-        input.click();
-      }
-    function sortTable(option) {
-        var table, rows, switching, i, shouldSwitch;
-        table = document.querySelector(".holiday-table");
-        switching = true;
-    
-        while (switching) {
-            switching = false;
-            rows = table.rows;
-    
-            // Loop through all table rows (except the header)
-            for (i = 1; i < (rows.length - 1); i++) {
-                shouldSwitch = false;
-    
-                // Get the two elements to compare
-                var x = rows[i].getElementsByTagName("td")[0]; // Assuming the first column contains the month
-                var y = rows[i + 1].getElementsByTagName("td")[0];
-    
-                // Check if the two rows should switch place based on the selected option
-                if (option === "Month") {
-                    // Get the month names
-                    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                    var indexX = months.indexOf(x.innerHTML.split(" ")[0]);
-                    var indexY = months.indexOf(y.innerHTML.split(" ")[0]);
-                    if (indexX > indexY) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                } else if (option === "Year") {
-                    var currentYear = parseInt(x.innerHTML.split(" ")[1]);
-                    var nextYear = parseInt(y.innerHTML.split(" ")[1]);
-                    if (currentYear > nextYear) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-    
-            if (option === "All") {
-                if (currentSortColumn !== "All") {
-                    // Restore the original order of rows
-                    var originalOrder = Array.from(rows).slice(1, -1); // Exclude header and footer rows
-                    originalOrder.forEach(row => table.appendChild(row));
-                    currentSortColumn = "All"; // Update the current sort column
-                }
-                return; // Exit the function since sorting is not needed
-            }
-    
-            if (shouldSwitch) {
-                // If a switch was needed, perform the switch and mark that a switch has been done
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-            }
-        }
-    
-        // Update event listeners after sorting
-        updateEventListeners();
-    }
-    $(document).ready(function(){
-        $(".cust-button").click(function(){
-            $(".cust-button").removeClass("active");
-            $(this).addClass("active");
-    
-            if ($(this).attr('id') === 'button1') {
-                showCalendarContainer();
-            } else {
-                showOtherContainer();
-            }
-        });
-    
-        // Trigger click event on Button 1 initially to show the calendar container
-        $("#button1").click();
-    });
-    
-    function calendarContainer() {
-        $("#calendarContainer").show();
-        $("#otherContainer").hide();
-        $("#button1").addClass("active");
-        $("#button2").removeClass("active");
-    }
-    
-    function otherContainer() {
-        $("#otherContainer").show();
-        $("#calendarContainer").hide();
-        $("#button2").addClass("active");
-        $("#button1").removeClass("active");
-    }
-    
-    
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.js"></script>
 
+    
+      </script>
+      
 
-</body>
 </html>
 {% endblock %}

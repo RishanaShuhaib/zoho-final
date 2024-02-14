@@ -33,18 +33,18 @@
           <input type="text" id="searchInput" oninput="searchTable()" placeholder="Search Here..." class="mr-2 form-control" style="width: 150px;">
       </div>
 
-        <div class="ml-md-3">
-          <div class="input-group">
+      <div class="ml-md-3">
+        <div class="input-group">
             <div class="input-group-prepend">
-              <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Sort</button>
-              <div class="dropdown-menu" style="color:white;">
-                <a class="dropdown-item" id="sortAll" href="#">All</a>
-                <a class="dropdown-item" id="sortGodownName" href="#">Godown Name</a>
-                <a class="dropdown-item" id="sortQuantity" href="#">Quantity</a>
-              </div>
+                <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Sort</button>
+                <div class="dropdown-menu" style="color:white;">
+                    <a class="dropdown-item" id="sortAll" href="#" onclick="sortTable('sortAll')">All</a>
+                    <a class="dropdown-item" id="sortGodownName" href="#" onclick="sortTable('sortGodownName')">Godown Name</a>
+                    <a class="dropdown-item" id="sortQuantity" href="#" onclick="sortTable('sortQuantity')">Quantity</a>
+                </div>
             </div>
-          </div>
         </div>
+    </div>
 
         <div class="ml-md-3">
           <div class="input-group">
@@ -52,7 +52,7 @@
               <button class="btn btn-custom dropdown-toggle "  type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-filter"></i></button>
               <div class="dropdown-menu" style="color:white;">
                 <a class="dropdown-item" href="#" onclick="applyFilter('all')">All</a>
-                <a class="dropdown-item" href="#" onclick="aapplyFilter('active')">Active</a>
+                <a class="dropdown-item" href="#" onclick="applyFilter('active')">Active</a>
                 <a class="dropdown-item" href="#" onclick="applyFilter('inactive')">Inactive</a>
               </div>
             </div>
@@ -62,7 +62,9 @@
         <div class="ml-md-5">
           <div class="input-group">
             <a href="#" class="btn btn-custom ml-5" onclick="importData()" style="margin-left: 305px;">
-              Import <i class="fas fa-upload"></i>
+              Import <i class="fas fa-arrow-down"></i>
+            </i>
+            </i>
             </a>
           </div>
         </div>
@@ -70,7 +72,8 @@
         <div class="ml-md-1">
           <div class="input-group">
             <a href="#" class="btn btn-custom " onclick="exportData()" style="margin-left: 1px; ">
-              Export <i class="fas fa-file-export"></i>
+              Export <i class="fas fa-arrow-up"></i>
+            </i>
             </a>
           </div>
         </div>
@@ -229,90 +232,82 @@
     // Save the workbook to an Excel file
     XLSX.writeFile(workbook, "godown_details.xlsx");
   }
-  var currentSortColumn = '';  // Variable to keep track of the current sort column
-
-  var currentSortColumn = ''; // Variable to keep track of the current sorting column
-
-function sortTable(column) {
+  function sortTable(columnId) {
     var table, rows, switching, i, shouldSwitch;
-    table = document.querySelector(".holiday-table");
+    table = document.querySelector(".table");
     switching = true;
+
+    var columnIndex = 0; // Initialize columnIndex variable
+
+    // Store original order of rows
+    var originalRows = [];
+    rows = table.rows;
+    for (i = 1; i < rows.length; i++) {
+        originalRows.push(rows[i].cloneNode(true));
+    }
+
+    // Determine the column index based on columnId
+    if (columnId === "sortGodownName") {
+        columnIndex = 1; // Index of the column "Name"
+    } else if (columnId === "sortQuantity") {
+        columnIndex = 3; // Index of the column "Quantity"
+    } else if (columnId === "sortAll") {
+        // Reset to original order (remove sorting)
+        resetTable(originalRows);
+        return;
+    }
 
     while (switching) {
         switching = false;
         rows = table.rows;
 
-        // Loop through all table rows (except the header)
-        for (i = 1; i < (rows.length - 1); i++) {
+        for (i = 1; i < rows.length - 1; i++) {
             shouldSwitch = false;
+            var x = rows[i].getElementsByTagName("td")[columnIndex].textContent;
+            var y = rows[i + 1].getElementsByTagName("td")[columnIndex].textContent;
 
-            // Get the two elements to compare
-            var x = rows[i].getElementsByTagName("td")[0]; // Assuming the first column contains the month
-            var y = rows[i + 1].getElementsByTagName("td")[0];
-
-            // Check if the two rows should switch place based on the selected option
-            if (column === "Month") {
-                // Get the month names
-                var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                var indexX = months.indexOf(x.innerHTML.split(" ")[0]);
-                var indexY = months.indexOf(y.innerHTML.split(" ")[0]);
-                if (indexX > indexY) {
-                    shouldSwitch = true;
-                    break;
-                }
-            } else if (column === "Year") {
-                var currentYear = parseInt(x.innerHTML.split(" ")[1]);
-                var nextYear = parseInt(y.innerHTML.split(" ")[1]);
-                if (currentYear > nextYear) {
-                    shouldSwitch = true;
-                    break;
-                }
+            // Convert to numbers for quantity comparison
+            if (!isNaN(x) && !isNaN(y)) {
+                x = parseFloat(x);
+                y = parseFloat(y);
             }
-        }
 
-        if (column === "All") {
-            if (currentSortColumn !== "All") {
-                // Restore the original order of rows
-                for (i = 1; i < (rows.length - 1); i++) {
-                    rows[i].parentNode.appendChild(rows[i]);
-                }
-                currentSortColumn = "All"; // Update the current sort column
+            // Perform sorting based on column
+            if (columnIndex === 3 && x > y) { // Quantity column
+                shouldSwitch = true;
+                break;
+            } else if (columnIndex !== 3 && x.localeCompare(y) > 0) { // Name column
+                shouldSwitch = true;
+                break;
             }
-            break; // Exit the loop since sorting is not needed
         }
 
         if (shouldSwitch) {
-            // If a switch was needed, perform the switch and mark that a switch has been done
             rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
             switching = true;
         }
     }
 
-    // Update event listeners after sorting
-    updateEventListeners();
-    
-    // Update the current sort column
-    currentSortColumn = column;
+    // Function to reset table to original order (remove sorting)
+    function resetTable(originalRows) {
+      var table = document.querySelector('.table');
+      var tbody = table.querySelector('tbody');
+  
+      // Clear existing rows
+      tbody.innerHTML = '';
+  
+      // Append original rows in the original order
+      originalRows.forEach(function(row) {
+          tbody.appendChild(row);
+      });
+  
+      // Remove existing sorting by removing the 'sorted' class from all th elements
+      var headers = table.querySelectorAll('th');
+      headers.forEach(function(header) {
+          header.classList.remove('sorted');
+      });
+  }
 }
-
-// Attach click event listeners to the sort buttons
-document.getElementById('sortAll').addEventListener('click', function () {
-    sortTable("All");
-});
-
-document.getElementById('sortMonth').addEventListener('click', function () {
-    sortTable("Month");
-});
-
-document.getElementById('sortYear').addEventListener('click', function () {
-    sortTable("Year");
-});
-
-// Example for secondary sorting based on the primary sorting column
-document.getElementById('sortGodownName').addEventListener('click', function () {
-    // Here you can call the sortTable function with the appropriate column based on the current state
-    sortTable("GodownName"); // Update "GodownName" with the actual column name
-});
 
   function applyFilter(filterValue) {
     var table, rows, i, td, status;

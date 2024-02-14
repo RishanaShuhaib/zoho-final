@@ -1,0 +1,25 @@
+{% load tz %}
+<div for="historyModal" class="modal-body" style="color:white;">
+    <table class="table" style="color:white;">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Action</th>
+                <th>By</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    {% if holiday.is_edited %}
+                        {{ current_date|date:"Y-m-d" }}
+                    {% else %}
+                        {{ holiday.start_date|date:"Y-m-d" }}
+                    {% endif %}
+                </td>
+                <td>{% if holiday.is_edited %} Edited {% else %} Created {% endif %}</td>
+                <td>{{ holiday.user.username }}</td>  <!-- Ensure this correctly accesses the username -->
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -383,6 +383,11 @@ def company_renew_terms(request):
             return redirect('company_profile')
     else:
         return redirect('/')
+    
+    
+    
+    
+
 def show_godown_details(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
@@ -414,10 +419,9 @@ def godown_overview(request, godown_id):
         return render(request, 'company/godown_overview.html', {'godowns': godowns, 'godown': godown})
     except Godown.DoesNotExist:
         return HttpResponseNotFound("Godown not found")
-
 def add_godown(request):
     units = Unit.objects.all()
-    items = Items.objects.all()  # Define units and items outside the if block
+    items = Items.objects.all() 
     if request.method == 'POST':
         date = request.POST.get('date')
         hsn = request.POST.get('HSN')  # Corrected field name
@@ -488,7 +492,6 @@ def edit_godown(request):
         godown.distance = request.POST.get('editedGodownDistance')
         godown.is_edited = True
         godown.save()
-        messages.success(request, 'Godown details updated successfully.')
         return redirect('edit_page', godown_id=godown_id)
     else:
         # Handle cases where the request method is not POST (optional)
@@ -615,22 +618,15 @@ def add_unit(request):
 def add_comment(request, godown_id):
     if request.method == 'POST':
         comment_text = request.POST.get('comment', '')
-
         godown = get_object_or_404(Godown, pk=godown_id)
-
         Comment.objects.create(
                 comment_text=comment_text,
                 godown=godown
             )
-
         return redirect('godown_overview', godown_id=godown_id)
-
     return redirect('godown_overview', godown_id=godown_id)
 def show_comments(request, godown_id):
-    # Fetch comments related to the specified godown_id
     comments = Comment.objects.filter(godown_id=godown_id)
-
-    # Render the template with the comments
     return render(request, 'company/show_comments.html', {'comments': comments})
 def edit_comment(request):
     if request.method == 'POST':
@@ -641,23 +637,20 @@ def edit_comment(request):
         comment.save()
         return HttpResponse('Comment Edited successfully')
 def delete_comment(request, comment_id):
-    if request.method == 'POST':
-        comment = get_object_or_404(Comment, pk=comment_id)
-        comment.delete()
-        return JsonResponse({'message': 'Comment deleted successfully'})
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
+    comment = get_object_or_404(Comment, id=comment_id)
+    comment.delete()
+    messages.success(request, 'Comment deleted successfully.')
+    return redirect('godown_overview', godown_id=comment.godown.id) 
 def get_godown_history(request):
     if 'login_id' in request.session:
         login_id = request.session['login_id']
         try:
             log_details = LoginDetails.objects.get(id=login_id)
             company_details = log_details.companydetails_set.first()
-
-            godown_id = request.GET.get('godown_id')  # Retrieve godown_id from the request
+            godown_id = request.GET.get('godown_id')
             if godown_id:
                 godown = get_object_or_404(Godown, id=godown_id)
-                current_date = now().date()  # Fetch the current date
+                current_date = now().date() 
                 return render(request, 'company/godownhistory.html', {'godown': godown, 'current_date': current_date})
             else:
                 return JsonResponse({'error': 'Godown ID is required'}, status=400)
@@ -688,7 +681,7 @@ def holiday_overview(request):
                     if holiday.duration.days == 0:
                         holidays_count = 1
                         working_days = count_days_in_month(current_month.year, current_month.month) - cumulative_counts.get(month_year_key, {}).get('holidays', 0)
-                        # Add 1 holiday which is not subtracted from working days
+                        
                         working_days -= 1
                     else:
                         start_day = max(holiday.start_date.day - 1, 1)
@@ -723,54 +716,67 @@ def holiday_overview(request):
             return HttpResponse("Login details or company details not found.")
     else:
         return redirect('/')
+
+def edit_holidaypage(request, holiday_id):
+    holiday = get_object_or_404(Holiday, id=holiday_id)
+    return render(request, 'company/edit_holiday.html', {'holiday': holiday})
 def edit_holiday(request):
     if request.method == 'POST':
-        # Retrieve edited holiday details from POST request
-        holiday_id = request.POST.get('holidayId')
-        holiday_name = request.POST.get('holidayName')
-        start_date = request.POST.get('startDate')
-        end_date = request.POST.get('endDate')
-
-        # Update holiday object in the database
+        holiday_id = request.POST.get('editedholiday_id')
+        holiday = get_object_or_404(Holiday, id=holiday_id)
+        print(holiday.id)
+        holiday.start_date = request.POST.get('start_date')
+        holiday.end_date = request.POST.get('end_date')
+        holiday.holiday_name = request.POST.get('holiday_name')
+        holiday.is_edited = True
+        holiday.save()
+        return redirect('holiday_overview')
+    else:
+        return redirect('edit_holiday')
+def delete_holiday(request, holiday_id):
+    holiday = get_object_or_404(Holiday, id=holiday_id)
+    holiday.delete()
+    return redirect('holiday_overview')
+def get_holiday_history(request):
+    if 'login_id' in request.session:
+        login_id = request.session['login_id']
         try:
-            holiday = Holiday.objects.get(id=holiday_id)
-            holiday.holiday_name = holiday_name
-            holiday.start_date = start_date
-            holiday.end_date = end_date
-            holiday.save()
-            return JsonResponse({'success': True})
-        except Holiday.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Holiday not found'})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
-def holiday_details_endpoint(request):
-    holidays = Holiday.objects.all()  # Assuming Holiday is the model for your holidays
-    holiday_data = [{'holiday_name': holiday.holiday_name,
-                     'start_date': holiday.start_date,
-                     'end_date': holiday.end_date} for holiday in holidays]
-    return JsonResponse(holiday_data, safe=False)
-def get_holidays_api(request, year, month):
-    # Fetch holidays from the database for the given year and month
-    holidays = Holiday.objects.filter(start_date__year=year, start_date__month=month)
-    
-    # Serialize the holidays data
-    serialized_holidays = [{
-        'id': holiday.id,
-        'start_date': holiday.start_date.strftime('%Y-%m-%d'),
-        'end_date': holiday.end_date.strftime('%Y-%m-%d'),
-        'holiday_name': holiday.holiday_name,
-        # Add more fields if needed
-    } for holiday in holidays]
-    
-    # Return JSON response
-    return JsonResponse({'holidays': serialized_holidays})
+            login_details = LoginDetails.objects.get(id=login_id)
+            company_details = login_details.companydetails_set.first()
+            holiday_id = request.GET.get('holiday_id')
+            if holiday_id:
+                holiday = get_object_or_404(Holiday, id=holiday_id)
+                current_date = now().date()
+                return render(request, 'company/holidayhistory.html', {'holiday': holiday, 'current_date': current_date})
+            else:
+                return JsonResponse({'error': 'Holiday ID is required'}, status=400)
+        except LoginDetails.DoesNotExist:
+            return JsonResponse({'error': 'Login details not found'}, status=404)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+def add_commentholiday(request):
+    if request.method == 'POST':
+        comment_text = request.POST.get('comment')
+        month_year = request.POST.get('month_year')
+        month, year = month_year.split('-')
+        
+        # Create a new CommentHoliday object for each comment
+        comment_holiday = CommentHoliday.objects.create(holidaymonth=f"{year}-{month}", comment_text=comment_text)
+        comment_holiday.save()
+
+        return redirect('holiday_overview')
+def get_comments(request):
+    if request.method == 'GET':
+        month_year = request.GET.get('month_year')
+        month, year = map(int, month_year.split('-'))
+        comments = CommentHoliday.objects.filter(holidaymonth=f"{year}-{month}")
+        return render(request, "company/viewcommentholiday.html", {'comments': comments})
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
         log_details = LoginDetails.objects.get(id=log_id)
 
         if request.method == 'POST':
-            # Check if the user is authenticated
             if not log_details:
                 messages.error(request, 'You need to be logged in to add a holiday.')
                 return redirect('login')

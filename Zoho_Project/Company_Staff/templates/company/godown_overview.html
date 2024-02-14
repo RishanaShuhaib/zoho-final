@@ -289,6 +289,16 @@
                     </a>
                 </div>
                 <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
+                    <button class="btn btn-custom toggle-status-button" style="width: 100%;" onclick="toggleItemStatus('{{ godown.id }}')">
+                        {% if godown.item.is_active == 'active' %}
+                            Inactive
+                        {% else %}
+                            Activate
+                        {% endif %}
+                    </button>
+                </div>
+                
+                <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
                     <div class="input-group">
                         <button class="btn btn-custom dropdown-toggle" type="button" style="width: 100%;" data-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-comment"></i>
@@ -329,8 +339,7 @@
                             </div>
                             
                             <!-- Hidden field for godown_id -->
-                            <input type="hidden" name="godown_id" value="{{ godown.id }}">
-                            
+                            <input type="hidden" name="godown_id" id="godown_id"> 
                             <!-- Submit button -->
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>
@@ -361,7 +370,7 @@
                                     <td>{{ comment.comment_text }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-warning edit-comment-button" onclick="editComment('{{ comment.id }}')">Edit</button>
-                                        <button class="btn btn-sm btn-danger"onclick="editComment('{{ comment.id }}')" >Delete</button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteComment('{{ comment.id }}')">Delete</button>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -395,6 +404,7 @@
             <div class="godown-card" id="selectedGodownDetails">
                 <h3 align="center" style="color: black; font-size: 20px; margin-bottom: 15px;">Godown Details</h3>
                 <p><strong>Godown Name:</strong> <span id="godownName">{{ godown.godown_name }}</span></p>
+                <p><strong>Created By:</strong> <span id="createdBy">{{ godown.login_details.username }}</span></p>
                 <p><strong>Item Name:</strong> <span id="itemName">{{ godown.item.item_name }}</span></p>
                 <p><strong>Date:</strong> <span id="godownDate">{{ godown.date }}</span></p>
                 <p><strong>HSN:</strong> <span id="godownHSN">{{ godown.HSN }}</span></p>
@@ -410,6 +420,43 @@
 </div>
 </div>
     <script>
+        function toggleItemStatus(godownId) {
+            // Get the CSRF token from the cookie
+            var csrftoken = getCookie('csrftoken');
+        
+            // Send an AJAX request to toggle the item status
+            $.ajax({
+                url: "{% url 'toggle_item_status' %}",
+                method: 'POST',
+                headers: { "X-CSRFToken": csrftoken }, // Include the CSRF token in the headers
+                data: { godown_id: godownId },
+                success: function(response) {
+                    // Reload the page or update the UI as needed
+                    location.reload(); // Example: Reload the page
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error toggling item status:', error);
+                    // Handle errors if needed
+                }
+            });
+        }
+        
+        // Function to get CSRF token from cookie
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Check if the cookie contains the CSRF token
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
         function showHistoryModal(godownId) {
             $.ajax({
                 url: "{% url 'get_godown_history' %}",
@@ -474,6 +521,28 @@
                 // Hide the edit comment form after submission
                 editForm.style.display = 'none';
             };
+        }
+        
+        function deleteComment(commentId) {
+            if (confirm("Are you sure you want to delete this comment?")) {
+                // Send a POST request to delete the comment
+                $.ajax({
+                    url: "{% url 'delete_comment' comment_id=0 %}".replace('0', commentId),
+                    type: 'POST',  // Make sure it's a POST request
+                    dataType: 'json',
+                    success: function(response) {
+                        // Handle the success response
+                        alert(response.message);
+                        // Remove the deleted comment from the DOM
+                        $('#commentRow' + commentId).remove();
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle the error response
+                        console.error('Error deleting comment:', error);
+                        alert('An error occurred while deleting the comment.');
+                    }
+                });
+            }
         }
 function printGodownDetails() {
     var printContents = document.getElementById("selectedGodownDetails").innerHTML;

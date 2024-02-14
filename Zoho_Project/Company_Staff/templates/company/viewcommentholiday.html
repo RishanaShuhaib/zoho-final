@@ -1,0 +1,10 @@
+{% load tz %}
+<div class="modal-body">
+    {% for comment in comments %}
+    <div class="comment">
+        <p>{{ comment.comment_text }}</p>
+    </div>
+    {% empty %}
+    <p>No comments available.</p>
+    {% endfor %}
+</div>

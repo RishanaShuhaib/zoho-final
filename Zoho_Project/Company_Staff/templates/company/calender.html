@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+    <!-- Include FullCalendar CSS and JavaScript files -->
+    <link href="{% static 'fullcalendar/core/main.css' %}" rel="stylesheet" />
+    <link href="{% static 'fullcalendar/daygrid/main.css' %}" rel="stylesheet" />
+    <script src="{% static 'fullcalendar/core/main.js' %}"></script>
+    <script src="{% static 'fullcalendar/daygrid/main.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                plugins: ['dayGrid'],
+                events: [
+                    // List of events fetched from the Django view
+                    {% for event in events %}
+                    {
+                        title: '{{ event.holiday_name }}',
+                        start: '{{ event.start_date }}',
+                        end: '{{ event.end_date }}',
+                    },
+                    {% endfor %}
+                ]
+            });
+            calendar.render();
+        });
+    </script>
+   
+</head>
+<body>
+    <div id='calendar'></div>
+</body>
+</html>

@@ -33,10 +33,12 @@ urlpatterns = [
     path('Company/Edit_Comment/', views.edit_comment, name='edit_comment'),
     path('Company/Delete-Comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
     path('Company/Get-Godown-history/', views.get_godown_history, name='get_godown_history'),
-    path('api/holidays/<int:year>/<int:month>/', views.get_holidays_api, name='get_holidays_api'),
-    path('Company/holiday-details/', views.holiday_details_endpoint, name='holiday_details_endpoint'),
+    path('Company/Get-Holiday-history/', views.get_holiday_history, name='get_holiday_history'),
+    path('Company/Edit-Holidaypage/<int:holiday_id>/', views.edit_holidaypage, name='edit_holidaypage'),
     path('Company/Edit-Holiday/', views.edit_holiday, name='edit_holiday'),
-
+    path('Company/Delete_Holiday/<int:holiday_id>/', views.delete_holiday, name='delete_holiday'),
+    path('Company/Add_Commentholiday/', views.add_commentholiday, name='add_commentholiday'),
+    path('Company/Get_Comments/', views.get_comments, name='get_comments'),
 
 
 
