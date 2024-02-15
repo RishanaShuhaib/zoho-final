@@ -420,26 +420,6 @@
 </div>
 </div>
     <script>
-        function toggleItemStatus(godownId) {
-            // Get the CSRF token from the cookie
-            var csrftoken = getCookie('csrftoken');
-        
-            // Send an AJAX request to toggle the item status
-            $.ajax({
-                url: "{% url 'toggle_item_status' %}",
-                method: 'POST',
-                headers: { "X-CSRFToken": csrftoken }, // Include the CSRF token in the headers
-                data: { godown_id: godownId },
-                success: function(response) {
-                    // Reload the page or update the UI as needed
-                    location.reload(); // Example: Reload the page
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error toggling item status:', error);
-                    // Handle errors if needed
-                }
-            });
-        }
         
         // Function to get CSRF token from cookie
         function getCookie(name) {

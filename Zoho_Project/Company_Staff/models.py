@@ -64,5 +64,5 @@ class Holiday(models.Model):
     created_at=models.DateField(null=True, blank=True)
     is_edited = models.BooleanField(default=False)
 class CommentHoliday(models.Model):
-    holidaymonth = models.TextField()
+    holidaymonth = models.CharField(max_length=7)
     comment_text = models.TextField()

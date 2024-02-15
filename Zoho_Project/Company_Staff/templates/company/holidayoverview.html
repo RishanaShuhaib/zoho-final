@@ -374,61 +374,57 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal" id="viewCommentModal">
+                <div class="modal" id="viewCommentModal" tabindex="-1" role="dialog" aria-labelledby="viewCommentModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
-                        <div class="modal-content" style="background:black;color:white;">
+                        <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">Comments</h5>
-                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <button type="button"onclick="window.location.reload();" class="close" data-dismiss="modal">&times;</button>
                             </div>
-                            <div class="modal-body">
-                                <!-- Comments will be loaded here dynamically -->
+                            <div class="modal-body" style="color: black;">
+                                <ul>
+                                    {% if comments %}
+                                        {% for comment in comments %}
+                                            <li>{{ comment }}</li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li>No comments available.</li>
+                                    {% endif %}
+                                </ul>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="button" onclick="window.location.reload();"class="btn btn-secondary" data-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <script>
-                    $(document).ready(function () {
-                        $('#viewCommentButton').click(function () {
-                            // Extract the current display month and year from the container table
-                            var monthYear = $('#table').data('month-year');
                 
-                            // Make AJAX request to fetch comments for the specified month and year
-                            $.ajax({
-                                url: '/get_comments/', // Replace with your URL endpoint
-                                method: 'GET',
-                                data: {
-                                    month_year: monthYear
-                                },
-                                success: function (response) {
-                                    var comments = response.comments;
-                                    var modalBody = $('#viewCommentModal .modal-body'); // Corrected selector
-                
-                                    // Clear previous content
-                                    modalBody.empty();
-                
-                                    // Populate modal body with comments
-                                    if (comments.length > 0) {
-                                        $.each(comments, function (index, comment) {
-                                            modalBody.append('<div class="comment"><p>' + comment.comment_text + '</p></div>');
-                                        });
-                                    } else {
-                                        modalBody.append('<p>No comments available.</p>');
-                                    }
-                
-                                    // Show the modal
-                                    $('#viewCommentModal').modal('show'); // Trigger modal display
-                                },
-                                error: function (xhr, status, error) {
-                                    console.error(error);
+                    function showComments(monthYearInput) {
+                        $.ajax({
+                            url: '/Company/Get_Comments/',
+                            method: 'GET',
+                            data: { month_year: monthYearInput },
+                            success: function(response) {
+                                var comments = response.comments;
+                                var modalBody = $('#viewCommentModal .modal-body ul');
+                                modalBody.empty(); // Clear existing contents
+                                if (comments.length > 0) {
+                                    $.each(comments, function(index, comment) {
+                                        modalBody.append('<li>' + comment + '</li>'); // Append comment to list
+                                    });
+                                } else {
+                                    modalBody.append('<li>No comments available.</li>'); // Display message for no comments
                                 }
-                            });
+                                $('#viewCommentModal').modal('show'); // Show modal after comments are populated
+                            },
+                            error: function(xhr, status, error) {
+                                console.error(error); // Log any errors to console
+                            }
                         });
-                    });
+                    }
+                
             function showHistoryModal(holidayId) {
                 // Make an AJAX request to fetch holiday history
                 $.ajax({
@@ -559,37 +555,38 @@
             // Initially populate otherContainer with details of current display month in calendar
             otherContainer(calendar.getDate());
         });
-        
-        function otherContainer(date) {
+        function otherContainer(date, monthYearInput) {
             var tableDiv = document.getElementById('otherContainer');
             var currentMonth = date.getMonth() + 1;
             var currentYear = date.getFullYear();
+            var monthYearInput = currentMonth + '-' + currentYear; 
             var divHTML = `
-    <div>
-        <button class="btn btn-custom" onclick="downloadPDF()" style="width:auto;padding:10px;margin:5px;">
-            <i class="fas fa-download"></i> Download PDF
-        </button>
-        <button class="btn btn-custom" onclick="printHolidayDetails()" style="width:auto;padding:10px;">
-            <i class="fas fa-print"></i> Print
-        </button>
-        <div class="dropdown">
-            <button class="btn btn-custom dropdown-toggle" type="button" style="width: 20px !important;padding: 10px;" data-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-comment"></i>
-            </button>
-            <div class="dropdown-menu" style="color: white;">
-                <a class="dropdown-item" data-toggle="modal" data-target="#addCommentModal">
-                    <i class="fas fa-comment"></i> Add Comment
-                </a>
-                <a class="dropdown-item" data-toggle="modal" data-target="#viewCommentModal">
-                    <i class="fas fa-comments"></i> View Comments
-                </a>
-            </div>
-        </div>
-    </div>`;
+                <div>
+                    <input type="hidden" id="monthYearInput" value="${monthYearInput}">
+                    <button class="btn btn-custom" onclick="downloadPDF()" style="width:auto;padding:10px;margin:5px;">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                    <button class="btn btn-custom" onclick="printHolidayDetails()" style="width:auto;padding:10px;">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-custom dropdown-toggle" type="button" style="width: 20px !important;padding: 10px;" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-comment"></i>
+                        </button>
+                        <div class="dropdown-menu" style="color: white;">
+                            <a class="dropdown-item" data-toggle="modal" data-target="#addCommentModal">
+                                <i class="fas fa-comment"></i> Add Comment
+                            </a>
+                            <a class="dropdown-item" data-toggle="modal" data-target="#viewCommentModal" onclick="showComments('${monthYearInput}')">
+                                <i class="fas fa-comments"></i> View Comments
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
 
-            var tableHTML = '<table class="table" style="color:white !important;">';
-            tableHTML += '<thead><tr><th>Start Date</th><th>End Date</th><th>Holiday Name</th><th>History</th><th>Action</th></tr></thead>';
-            tableHTML += '<tbody>';
+                var tableHTML = '<table class="table" id="otherContainerTable" style="color:white !important;">';
+                    tableHTML += '<thead><tr><th>Start Date</th><th>End Date</th><th>Holiday Name</th><th>History</th><th>Action</th></tr></thead>';
+                    tableHTML += '<tbody>';
         
             // Iterate over holidays to populate table rows based on the selected month and year
             {% for holiday in holidays %}
@@ -615,12 +612,13 @@
             {% endfor %}
         
             tableHTML += '</tbody></table>';
-            // Concatenate divHTML and tableHTML
-            var contentHTML = divHTML + tableHTML;
-            // Set the innerHTML of the tableDiv
-            tableDiv.innerHTML = contentHTML;
-            document.getElementById('monthYearInput').value = currentMonth + '-' + currentYear;
-        }
+    // Concatenate divHTML and tableHTML
+    var contentHTML = divHTML + tableHTML;
+    // Set the innerHTML of the tableDiv
+    tableDiv.innerHTML = contentHTML;
+    document.getElementById('monthYearInput').value = currentMonth + '-' + currentYear;
+    
+}
         
         function searchTable() {
             // Declare variables

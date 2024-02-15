@@ -768,9 +768,16 @@ def add_commentholiday(request):
 def get_comments(request):
     if request.method == 'GET':
         month_year = request.GET.get('month_year')
-        month, year = map(int, month_year.split('-'))
-        comments = CommentHoliday.objects.filter(holidaymonth=f"{year}-{month}")
-        return render(request, "company/holidayoverview.html", {'comments': comments})
+        provided_month, provided_year = map(int, month_year.split('-'))
+        formatted_month_year = f"{provided_year}-{provided_month:02d}"
+        comments = CommentHoliday.objects.filter(holidaymonth__startswith=formatted_month_year)
+        if not comments:
+            formatted_month_year = f"{provided_year}-{provided_month}"
+            comments = CommentHoliday.objects.filter(holidaymonth__startswith=formatted_month_year)
+        for comment in comments:
+            comment_texts = [comment.comment_text for comment in comments]
+            response_data = {'comments': comment_texts if comment_texts else ['No comments available.']}
+            return JsonResponse(response_data)
 def add_holiday(request):
     if 'login_id' in request.session:
         log_id = request.session['login_id']
