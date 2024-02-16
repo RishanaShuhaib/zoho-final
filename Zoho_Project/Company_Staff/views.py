@@ -508,6 +508,20 @@ def delete_godown(request, godown_id):
 
     # Render the template with the updated godown list
     return render(request, 'company/show_godown_details.html', context)
+def toggle_godown_status(request, godown_id, new_status):
+    try:
+        # Convert the received status to match the expected values in the database
+        new_status = 'Active' if new_status == 'active' else 'Inactive'
+        
+        # Update status in Godown model
+        godown = get_object_or_404(Godown, id=godown_id)
+        godown.item.is_active = new_status
+        godown.item.save()
+
+        return JsonResponse({'success': True, 'newStatus': new_status})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=404)
+
 def save_item(request):
     # Get all units available in the system
     units = Unit.objects.all()
@@ -758,13 +772,22 @@ def add_commentholiday(request):
     if request.method == 'POST':
         comment_text = request.POST.get('comment')
         month_year = request.POST.get('month_year')
-        month, year = month_year.split('-')
+        print("Month_year:", month_year)  # Add this line for debugging
         
+        # Splitting and parsing the month_year string
+        try:
+            provided_month, provided_year = map(int, month_year.split('-'))  # Adjusted the order of variables
+            formatted_month_year = f"{provided_year}-{provided_month:02d}"  # Format as YYYY-MM
+        except ValueError:
+            # Handle the case where month_year doesn't have the expected format
+            return JsonResponse({'error': 'Invalid format for month_year'})
+
         # Create a new CommentHoliday object for each comment
-        comment_holiday = CommentHoliday.objects.create(holidaymonth=f"{year}-{month}", comment_text=comment_text)
+        comment_holiday = CommentHoliday.objects.create(holidaymonth=formatted_month_year, comment_text=comment_text)
         comment_holiday.save()
 
-        return redirect('holiday_overview')
+        return JsonResponse({'success': 'Comment added successfully'})
+
 def get_comments(request):
     if request.method == 'GET':
         month_year = request.GET.get('month_year')

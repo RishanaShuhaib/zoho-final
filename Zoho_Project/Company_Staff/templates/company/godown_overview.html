@@ -213,15 +213,16 @@
                         </div>
                     </div>
                 
-                    <!-- Sort dropdown -->
+                    
                     <div class="col-md-2 mb-3 mb-md-0">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <button class="btn btn-custom dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false"><i class="fas fa-sort"></i></button>
                                 <div class="dropdown-menu" style="color:white;">
-                                    <a class="dropdown-item" id="sortAll" href="#">All</a>
-                                    <a class="dropdown-item" id="sortGodownName" href="#">Godown Name</a>
-                                    <a class="dropdown-item" id="sortQuantity" href="#">Quantity</a>
+                                    <a class="dropdown-item" id="clearSort" href="#">All</a>
+                                    <a class="dropdown-item" id="sortGodownName" onclick="sortTable(0, sortGodownName)"href="#">Godown Name</a>
+                                    <a class="dropdown-item" id="sortStockInHand" onclick="sortTable(1, sortStockInHand)"href="#">Stock In Hand</a>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -252,8 +253,8 @@
             <table class="godown-table">
                 <thead>
                     <tr>
-                        <th id="godownNameHeader" onclick="sortTable('godownName')">Godown Name</th>
-                        <th id="stockInHandHeader" onclick="sortTable('stockInHand')">Stock In Hand</th>
+                        <th id="sortGodownName" >Godown Name</th>
+                        <th id="sortStockInHand" >Stock In Hand</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -289,13 +290,15 @@
                     </a>
                 </div>
                 <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
-                    <button class="btn btn-custom toggle-status-button" style="width: 100%;" onclick="toggleItemStatus('{{ godown.id }}')">
-                        {% if godown.item.is_active == 'active' %}
-                            Inactive
+                    <!-- HTML/Django Template -->
+                    <a id="statusButton_{{ item.id }}" class="btn btn-custom edit-button" style="width: 100%;" onclick="updateStatusButton('{{ item.id }}', '{{ item.is_active }}')">
+                        {% if item.is_active == "active" %}
+                            <i class="fas fa-toggle-off"></i> Inactive
                         {% else %}
-                            Activate
+                            <i class="fas fa-toggle-on"></i> Active
                         {% endif %}
-                    </button>
+                    </a>
+                    
                 </div>
                 
                 <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
@@ -420,23 +423,45 @@
 </div>
 </div>
     <script>
-        
-        // Function to get CSRF token from cookie
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = cookies[i].trim();
-                    // Check if the cookie contains the CSRF token
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
+        // Function to update the status button based on the godown card details
+function updateStatusButton(itemId, isActive) {
+    var statusButton = document.getElementById("statusButton_" + itemId);
+    // Update the UI button
+    if (isActive === "Active") {
+        statusButton.innerHTML = '<i class="fas fa-toggle-on"></i> Active';
+    } else {
+        statusButton.innerHTML = '<i class="fas fa-toggle-off"></i> Inactive';
+    }
+    
+    // Update the backend with the new status
+    toggleGodownStatus(itemId, isActive);  // Pass isActive to the backend
+}
+
+// Function to fetch the current state of the godown from the server
+function fetchGodownState(itemId) {
+    fetch(`/get_godown_state/${itemId}`)
+        .then(response => response.json())
+        .then(data => {
+            // Update the status button based on the retrieved state
+            updateStatusButton(itemId, data.isActive);
+        })
+        .catch(error => console.error('Error fetching godown state:', error));
+}
+
+// Function to handle changes in godown card details
+function handleGodownCardChanges(itemId) {
+    // Monitor changes in relevant fields and update the status button accordingly
+    // For demonstration purposes, let's assume 'godownName' is the relevant field
+    var godownNameElement = document.getElementById("godownName");
+    godownNameElement.addEventListener('input', function() {
+        // Fetch the updated state of the godown from the server and update the status button
+        fetchGodownState(itemId);
+    });
+}
+
+// Call the function to handle changes in godown card details
+handleGodownCardChanges(itemId);
+
         function showHistoryModal(godownId) {
             $.ajax({
                 url: "{% url 'get_godown_history' %}",
@@ -566,50 +591,65 @@ function searchTable() {
         tr[i].style.display = found ? "" : "none";
     }
 }
-        function sortTable(column) {
-            var table, rows, switching, i, shouldSwitch;
-            table = document.querySelector(".godown-table");
-            switching = true;
-        
-            while (switching) {
-                switching = false;
-                rows = table.rows;
-        
-                for (i = 1; i < (rows.length - 1); i++) {
-                    shouldSwitch = false;
-                    var x = getCellValue(rows[i].getElementsByTagName("td")[column]);
-                    var y = getCellValue(rows[i + 1].getElementsByTagName("td")[column]);
-        
-                    console.log(`Comparing ${x} with ${y}`); // Add this line for debugging
-        
-                    if (isNaN(x) || isNaN(y)) {
-                        // If at least one of the values is not a number, do a string comparison
-                        if (x.toLowerCase() > y.toLowerCase()) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else {
-                        // Both values are numbers, do a numeric comparison
-                        if (parseFloat(x) > parseFloat(y)) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    }
-                }
-        
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                }
-            }
+
+document.addEventListener("DOMContentLoaded", function () {
+    var table = document.querySelector(".godown-table");
+    var tbody = table.querySelector("tbody");
+    var rows = Array.from(tbody.getElementsByTagName("tr"));
+    var originalOrder = rows.slice();  // Store the original order
+
+    function sortTable(columnIndex, customSort) {
+        rows.sort(function (a, b) {
+            var aValue = a.cells[columnIndex].textContent.trim().toLowerCase();
+            var bValue = b.cells[columnIndex].textContent.trim().toLowerCase();
+            return customSort(aValue, bValue);
+        });
+
+        // Clear the existing tbody content
+        while (tbody.firstChild) {
+            tbody.removeChild(tbody.firstChild);
         }
-        
-        function getCellValue(cell) {
-            if (cell.dataset.sortValue !== undefined) {
-                return cell.dataset.sortValue;
-            }
-            return cell.innerText || cell.textContent;
-        }
+
+        // Reorder the rows in the tbody
+        rows.forEach(function (row) {
+            tbody.appendChild(row);
+        });
+    }
+
+    function clearSort() {
+        // Restore the original order
+        originalOrder.forEach(function (row, index) {
+            tbody.appendChild(originalOrder[index]);
+        });
+
+        // Update the rows array to the original order
+        rows = originalOrder.slice();
+    }
+
+    // Custom sorting function for Godown Name
+    function godownNameSort(a, b) {
+        return a.localeCompare(b);
+    }
+
+    // Custom sorting function for Stock In Hand
+    function stockInHandSort(a, b) {
+        return parseInt(a) - parseInt(b);
+    }
+
+    // Event listeners for sorting buttons
+    document.getElementById("sortGodownName").addEventListener("click", function () {
+        sortTable(0, godownNameSort); // Sorting by Godown Name (column index 0)
+    });
+
+    document.getElementById("sortStockInHand").addEventListener("click", function () {
+        sortTable(1, stockInHandSort); // Sorting by Stock In Hand (column index 1) using custom sorting
+    });
+
+    document.getElementById("clearSort").addEventListener("click", function () {
+        clearSort();
+    });
+
+});
         function selectGodown(godownId) {
             var newUrl = "{% url 'godown_overview' 0 %}".replace('0', godownId);
             window.location.href = newUrl;

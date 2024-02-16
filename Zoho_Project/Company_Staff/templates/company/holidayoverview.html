@@ -253,7 +253,9 @@
             padding-left:0 !important;
             padding-right:0;
         }
-        
+        .fc-toolbar-title {
+            color: white;
+        }
         /* Hover effect */
         .btn-custom:hover {
             background: orange !important;
@@ -356,15 +358,14 @@
                                 <button type="button" class="close">&times;</button>
                             </div>
                             <div class="modal-body">
-                                <form method="post" action="{% url 'add_commentholiday'  %}" id="addCommentForm">
+                                <form method="post" action="{% url 'add_commentholiday' %}" id="addCommentForm">
                                     {% csrf_token %}
                                     <div class="form-group">
                                         <input type="hidden" id="holiday_id" name="holiday_id">
-                                        <input type="hidden" id="monthYearInput" name="month_year"> 
+                                        <input type="hidden" id="monthYearInput" name="month_year">
                                         <label for="comment">Comment:</label>
                                         <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
                                     </div>
-                                    <input type="hidden" id="holiday_id" name="holiday_id">
                                     <button type="submit" class="btn btn-primary">Submit</button>
                                 </form>
                             </div>
@@ -400,7 +401,56 @@
                 </div>
                 
                 <script>
-                
+                    document.getElementById('addCommentForm').addEventListener('submit', function(event) {
+                        event.preventDefault(); // Prevent the default form submission
+                        
+                        var comment = document.getElementById('comment').value;
+                        var monthYearInput = document.getElementById('monthYearInput').value;
+                        
+                        // Get the CSRF token value
+                        var csrftoken = getCookie('csrftoken');
+                        
+                        // Now submit the form
+                        $.ajax({
+                            url: "{% url 'add_commentholiday' %}",
+                            method: "POST",
+                            headers: { "X-CSRFToken": csrftoken }, // Include the CSRF token in the headers
+                            data: {
+                                csrfmiddlewaretoken: csrftoken, // Include the CSRF token in the request data
+                                comment: comment,
+                                month_year: monthYearInput
+                            },
+                            success: function(response) {
+                                // Handle success response
+                                console.log(response);
+                                // Close the modal
+                                $('#addCommentModal').modal('hide');
+                                // Reset the form
+                                document.getElementById('addCommentForm').reset(); // Reset the form
+                            },
+                            error: function(xhr, status, error) {
+                                console.error(error); // Log any errors to console
+                            }
+                        });
+                    });
+                    
+                    // Function to get the CSRF token from cookies
+                    function getCookie(name) {
+                        var cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            var cookies = document.cookie.split(';');
+                            for (var i = 0; i < cookies.length; i++) {
+                                var cookie = cookies[i].trim();
+                                // Does this cookie string begin with the name we want?
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                    
                     function showComments(monthYearInput) {
                         $.ajax({
                             url: '/Company/Get_Comments/',
@@ -563,26 +613,40 @@
             var divHTML = `
                 <div>
                     <input type="hidden" id="monthYearInput" value="${monthYearInput}">
-                    <button class="btn btn-custom" onclick="downloadPDF()" style="width:auto;padding:10px;margin:5px;">
-                        <i class="fas fa-download"></i> Download PDF
-                    </button>
-                    <button class="btn btn-custom" onclick="printHolidayDetails()" style="width:auto;padding:10px;">
-                        <i class="fas fa-print"></i> Print
-                    </button>
-                    <div class="dropdown">
-                        <button class="btn btn-custom dropdown-toggle" type="button" style="width: 20px !important;padding: 10px;" data-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-comment"></i>
+                    <div class="button-container" style="display: flex; align-items: center;">
+                        <button class="btn btn-custom" onclick="downloadPDF()"style="width:120px;margin-left:20px;">
+                            <i class="fas fa-download"></i> Download PDF
                         </button>
-                        <div class="dropdown-menu" style="color: white;">
-                            <a class="dropdown-item" data-toggle="modal" data-target="#addCommentModal">
-                                <i class="fas fa-comment"></i> Add Comment
-                            </a>
-                            <a class="dropdown-item" data-toggle="modal" data-target="#viewCommentModal" onclick="showComments('${monthYearInput}')">
-                                <i class="fas fa-comments"></i> View Comments
-                            </a>
+                        <button class="btn btn-custom" onclick="printHolidayDetails()"style="width:80px;margin-left:20px;">
+                            <i class="fas fa-print"></i> Print
+                        </button>
+                        <div class="dropdown">
+                            <button class="btn btn-custom dropdown-toggle" style="width:50px;margin-left:20px;"type="button" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-comment"></i>
+                            </button>
+                            <div class="dropdown-menu" style="color: white; width: 20px !important;">
+                                <button class="dropdown-item" data-toggle="modal" data-target="#addCommentModal">
+                                    <i class="fas fa-comment"></i> Add Comment
+                                </button>
+                                <button class="dropdown-item" data-toggle="modal" data-target="#viewCommentModal" onclick="showComments('${monthYearInput}')">
+                                    <i class="fas fa-comments"></i> View Comments
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>`;
+                        <div class="dropdown">
+                            <button class="btn btn-custom dropdown-toggle"style="width:50px;margin-left:40px;" type="button" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-share"></i>
+                            </button>
+                            <div class="dropdown-menu" style="color: white;">
+                                <a href="whatsapp://send?text=Check%20out%20this%20content:%20https://api.whatsapp.com/send?text" target="_blank">Share via WhatsApp</a>
+
+                                <a class="dropdown-item" href="#" onclick="shareViaEmail()">
+                                    <i class="fas fa-envelope"></i> Share via Email
+                                </a>
+                            </div>
+                        </div>
+                    </div>`;
+                    
 
                 var tableHTML = '<table class="table" id="otherContainerTable" style="color:white !important;">';
                     tableHTML += '<thead><tr><th>Start Date</th><th>End Date</th><th>Holiday Name</th><th>History</th><th>Action</th></tr></thead>';
@@ -619,7 +683,43 @@
     document.getElementById('monthYearInput').value = currentMonth + '-' + currentYear;
     
 }
-        
+function shareViaWhatsApp() {
+    var tableContent = getTableTextContent();
+    var cardContent = 'Holiday Details:\n\n' + tableContent;
+    var message = encodeURIComponent(cardContent);
+    window.location.href = 'whatsapp://send?text=' + message;
+}
+
+// Function to compose the email body and open the email client
+function shareViaEmail() {
+    var tableContent = getTableTextContent();
+    var cardContent = 'Holiday Details:\n\n' + tableContent;
+    var subject = encodeURIComponent('Subject');
+    var body = encodeURIComponent(cardContent);
+    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+}
+
+function getTableTextContent() {
+    // Get the table element
+    var table = document.getElementById('otherContainerTable');
+    var tableRows = table.rows;
+    var content = '';
+
+    // Loop through each row in the table
+    for (var i = 0; i < tableRows.length; i++) {
+        var rowCells = tableRows[i].cells;
+        // Loop through the first three cells in the row (columns)
+        for (var j = 0; j < Math.min(rowCells.length, 3); j++) {
+            // Append the cell content to the content string
+            content += rowCells[j].innerText + '\t';
+        }
+        // Add a line break after each row
+        content += '\n';
+    }
+
+    // Return the table content
+    return content;
+}
         function searchTable() {
             // Declare variables
             var input, filter, table, tr, td, i, j, txtValue;

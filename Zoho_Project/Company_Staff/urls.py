@@ -39,6 +39,9 @@ urlpatterns = [
     path('Company/Delete_Holiday/<int:holiday_id>/', views.delete_holiday, name='delete_holiday'),
     path('Company/Add_Commentholiday/', views.add_commentholiday, name='add_commentholiday'),
     path('Company/Get_Comments/', views.get_comments, name='get_comments'),
+    path('Company/Toggle_Godown_Status/<int:godown_id>/<str:new_status>/', views.toggle_godown_status, name='toggle_godown_status'),
+    
+
 
 
 

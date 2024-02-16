@@ -69,7 +69,7 @@
     <div class="form-group">
       <label for="item">Items:</label>
       <div class="input-group">
-          <select id="item" name="item[]" class="form-control w-100" multiple>
+          <select id="item" name="item" class="form-control w-100" >
               <option value="" selected disabled>Select an Item</option>
               {% for item in items %}
                   <option value="{{ item.id }}">{{ item.item_name }}</option>
