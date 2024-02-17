@@ -291,11 +291,11 @@
                 </div>
                 <div class="col-md-2 mb-1 mb-md-0" style="padding: 0;">
                     <!-- HTML/Django Template -->
-                    <a id="statusButton_{{ item.id }}" class="btn btn-custom edit-button" style="width: 100%;" onclick="updateStatusButton('{{ item.id }}', '{{ item.is_active }}')">
+                    <a id="statusButton_{{ item.id }}" class="btn btn-custom edit-button" style="width: 100%;" onclick="updateStatusButton('{{ item.id }}', '{{ godown.item.is_active }}')">
                         {% if item.is_active == "active" %}
-                            <i class="fas fa-toggle-off"></i> Inactive
+                           Inactive
                         {% else %}
-                            <i class="fas fa-toggle-on"></i> Active
+                            Active
                         {% endif %}
                     </a>
                     
